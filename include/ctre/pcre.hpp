@@ -148,6 +148,7 @@ struct pcre {
 	struct push_character_tab: ctll::action {};
 	struct push_empty: ctll::action {};
 	struct push_hexdec: ctll::action {};
+	struct push_match_point_reset: ctll::action {};
 	struct push_name: ctll::action {};
 	struct push_not_word_boundary: ctll::action {};
 	struct push_number: ctll::action {};
@@ -248,6 +249,7 @@ struct pcre {
 	using z = ctll::term<'z'>;
 	using Z = ctll::term<'Z'>;
 	using B = ctll::term<'B'>;
+	using K = ctll::term<'K'>;
 	using escape_backreference = ctll::set<'1','2','3','4','5','6','7','8','9'>;
 	using dot__alphanum_characters = ctll::set<'.','0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
 	using set_11 = ctll::set<'!','\"','#','&','\'',',','-','/','0','1','2','3','4','5','6','7','8','9',':','<','=','>','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',']','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
@@ -500,6 +502,7 @@ struct pcre {
 	static constexpr auto rule(backslash, Z) -> ctll::push<ctll::anything, push_assert_subject_end_with_lineend>;
 	static constexpr auto rule(backslash, b) -> ctll::push<ctll::anything, push_word_boundary>;
 	static constexpr auto rule(backslash, B) -> ctll::push<ctll::anything, push_not_word_boundary>;
+	static constexpr auto rule(backslash, K) -> ctll::push<ctll::anything, push_match_point_reset>;
 	static constexpr auto rule(backslash, set_6) -> ctll::push<backslash_range>;
 	static constexpr auto rule(backslash, D__H__N__P__S__V__W__d__h__p__s__v__w) -> ctll::push<backslash_set>;
 	static constexpr auto rule(backslash, g) -> ctll::push<ctll::anything, backslash_g>;

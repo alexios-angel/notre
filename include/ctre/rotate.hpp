@@ -101,6 +101,10 @@ static auto rotate(assert_subject_end_line) -> assert_subject_end_line;
 static auto rotate(assert_line_begin) -> assert_line_begin;
 static auto rotate(assert_line_end) -> assert_line_end;
 
+// parse must survive \K in a lookbehind so the post-parse check can
+// reject it with a readable message (resolve_subroutines.hpp)
+static auto rotate(match_point_reset) -> match_point_reset;
+
 };
 
 }

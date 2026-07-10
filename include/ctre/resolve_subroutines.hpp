@@ -41,6 +41,69 @@ enum class subroutine_mode {
 	                  // non-atomic, no additional rotation
 };
 
+// --- \K may not appear inside a lookaround (same rule as modern PCRE2);
+// checked on resolved content so it is also found in inlined subroutines
+
+constexpr bool contains_match_point_reset(ctll::list<>) noexcept {
+	return false;
+}
+
+template <typename... Tail> constexpr bool contains_match_point_reset(ctll::list<match_point_reset, Tail...>) noexcept {
+	return true;
+}
+
+template <typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<sequence<Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <typename... Options, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<select<Options...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Options..., Tail...>{});
+}
+
+template <size_t A, size_t B, typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<repeat<A, B, Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <size_t A, size_t B, typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<lazy_repeat<A, B, Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <size_t A, size_t B, typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<possessive_repeat<A, B, Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<atomic_group<Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <size_t Id, typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<capture<Id, Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <size_t Id, typename Name, typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<capture_with_name<Id, Name, Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<lookahead_positive<Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<lookahead_negative<Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<lookbehind_positive<Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<lookbehind_negative<Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
+template <typename Head, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<Head, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Tail...>{});
+}
+
 // --- lookup of the referenced group anywhere in the pattern (worklist walk)
 
 template <size_t Id> constexpr auto subroutine_target_by_id(ctll::list<>) noexcept {
@@ -328,22 +391,36 @@ template <typename Whole> struct subroutine_resolver {
 		return capture_with_name<Id, Name, decltype(resolve<Mode>(v, Content{}))...>{};
 	}
 
+	template <typename... Content> static constexpr bool lookaround_content_is_valid() noexcept {
+		constexpr bool has_match_point_reset = contains_match_point_reset(ctll::list<Content...>{});
+		static_assert(!has_match_point_reset, "match point reset \\K is not allowed inside a lookahead or lookbehind");
+		return !has_match_point_reset;
+	}
+
 	template <subroutine_mode Mode, typename Visited, typename... Content> static constexpr auto resolve(Visited v, lookahead_positive<Content...>) noexcept {
-		return lookahead_positive<decltype(resolve<Mode>(v, Content{}))...>{};
+		using result = lookahead_positive<decltype(resolve<Mode>(v, Content{}))...>;
+		static_assert(lookaround_content_is_valid<decltype(resolve<Mode>(v, Content{}))...>());
+		return result{};
 	}
 
 	template <subroutine_mode Mode, typename Visited, typename... Content> static constexpr auto resolve(Visited v, lookahead_negative<Content...>) noexcept {
-		return lookahead_negative<decltype(resolve<Mode>(v, Content{}))...>{};
+		using result = lookahead_negative<decltype(resolve<Mode>(v, Content{}))...>;
+		static_assert(lookaround_content_is_valid<decltype(resolve<Mode>(v, Content{}))...>());
+		return result{};
 	}
 
 	// lookbehind content was rotated during parsing, so call sites inside
 	// switch to the rotating mode
 	template <subroutine_mode Mode, typename Visited, typename... Content> static constexpr auto resolve(Visited v, lookbehind_positive<Content...>) noexcept {
-		return lookbehind_positive<decltype(resolve<subroutine_mode::lookbehind>(v, Content{}))...>{};
+		using result = lookbehind_positive<decltype(resolve<subroutine_mode::lookbehind>(v, Content{}))...>;
+		static_assert(lookaround_content_is_valid<decltype(resolve<subroutine_mode::lookbehind>(v, Content{}))...>());
+		return result{};
 	}
 
 	template <subroutine_mode Mode, typename Visited, typename... Content> static constexpr auto resolve(Visited v, lookbehind_negative<Content...>) noexcept {
-		return lookbehind_negative<decltype(resolve<subroutine_mode::lookbehind>(v, Content{}))...>{};
+		using result = lookbehind_negative<decltype(resolve<subroutine_mode::lookbehind>(v, Content{}))...>;
+		static_assert(lookaround_content_is_valid<decltype(resolve<subroutine_mode::lookbehind>(v, Content{}))...>());
+		return result{};
 	}
 };
 

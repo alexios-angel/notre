@@ -223,4 +223,9 @@ static_assert(!CTRE_SYNTAX("(a)(?-2)")); // reaches before the first group
 static_assert(CTRE_SYNTAX("(a)(?-1)"));
 static_assert(CTRE_SYNTAX("(a)(?+1)(b)"));
 
+// match point reset
+static_assert(CTRE_TEST("a\\Kb"));
+static_assert(CTRE_TEST("\\K"));
+static_assert(!CTRE_TEST("[\\K]")); // not an escape inside a class
+
 

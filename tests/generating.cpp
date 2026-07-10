@@ -232,6 +232,9 @@ static_assert(same_f(CTRE_GEN("\\g'name'"), ctre::subroutine_call_with_name<ctre
 static_assert(same_f(CTRE_GEN("\\g<1>"), ctre::subroutine_call<1>()));
 static_assert(same_f(CTRE_GEN("\\g'2'"), ctre::subroutine_call<2>()));
 
+// match point reset \K is an ordinary zero-width atom in the AST
+static_assert(same_f(CTRE_GEN("a\\Kb"), ctre::sequence<ctre::character<'a'>,ctre::match_point_reset,ctre::character<'b'>>()));
+
 static_assert(same_f(CTRE_GEN("()"), ctre::capture<1,ctre::empty>()));
 static_assert(same_f(CTRE_GEN("(a)(b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::capture<2,ctre::character<'b'>>>()));
 static_assert(same_f(CTRE_GEN("((a)(b))"), ctre::capture<1,ctre::capture<2,ctre::character<'a'>>,ctre::capture<3,ctre::character<'b'>>>()));

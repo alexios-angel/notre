@@ -14,7 +14,6 @@
 * recursion (subroutine calls are supported, but must not be recursive)
 * conditional patterns
 * callouts
-* match point reset `\K`
 
 
 # Other unsupported "things"

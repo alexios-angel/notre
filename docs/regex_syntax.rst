@@ -7,7 +7,7 @@ The library supports most of the `PCRE <pcre.org>`_ syntax with a few exceptions
 - conditional patterns
 - control characters (\\cX)
 - horizontal / vertical character classes (\\h\\H\\v\\V)
-- match point reset (\\K)
+- match point reset inside lookarounds (\\K elsewhere is supported)
 - named characters
 - octal numbers
 - options / modes

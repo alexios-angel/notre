@@ -46,8 +46,14 @@ constexpr auto first(ctll::list<Content...> l, ctll::list<empty, Tail...>) noexc
 }
 
 // boundary
-template <typename... Content, typename CharLike, typename... Tail> 
+template <typename... Content, typename CharLike, typename... Tail>
 constexpr auto first(ctll::list<Content...> l, ctll::list<boundary<CharLike>, Tail...>) noexcept {
+	return first(l, ctll::list<Tail...>{});
+}
+
+// match point reset is zero-width: look through it
+template <typename... Content, typename... Tail>
+constexpr auto first(ctll::list<Content...> l, ctll::list<match_point_reset, Tail...>) noexcept {
 	return first(l, ctll::list<Tail...>{});
 }
 

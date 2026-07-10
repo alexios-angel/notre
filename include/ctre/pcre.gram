@@ -269,6 +269,9 @@ backslash->Z,[push_assert_subject_end_with_lineend]
 backslash->b,[push_word_boundary]
 backslash->B,[push_not_word_boundary]
 
+# Match point reset: the reported match (capture 0) starts where \K matched.
+backslash->K,[push_match_point_reset]
+
 # Property names and values share one alphabet (letters, digits, _ and .).
 property_name->[[a-zA-Z0-9_.]],[push_property_name],<property_name2>
 property_name2->[[a-zA-Z0-9_.]],[push_property_name],<property_name2> | equal_sign,<property_value> | epsilon

@@ -26,4 +26,9 @@ template <auto V, typename... Ts, typename Parameters> static constexpr auto app
 	return pcre_context{ctll::push_front(assert_subject_end_line(), subject.stack), subject.parameters};
 }
 
+// push_match_point_reset (\K)
+template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::push_match_point_reset, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
+	return pcre_context{ctll::push_front(match_point_reset(), subject.stack), subject.parameters};
+}
+
 #endif

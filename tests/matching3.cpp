@@ -310,4 +310,24 @@ static_assert(ctre::match<"((a)(b))(?1)">("abab"sv).get<3>() == "b"sv);
 static_assert(ctre::match<"((?<in>a))(?1)">("aa"sv).get<"in">() == "a"sv);
 #endif
 
+// match point reset \K: prefix is required but excluded from the match
+TEST_MATCH(284, "foo\\Kbar", "foobar");
+TEST_NOT_MATCH(285, "foo\\Kbar", "bar"); // the prefix is still required
+TEST_SEARCH(286, "foo\\Kbar", "xxfoobarxx");
+TEST_NOT_SEARCH(287, "foo\\Kbar", "xxbarxx");
+TEST_MATCH(288, "\\Kabc", "abc");
+TEST_MATCH(289, "(?:a\\K)+b", "aaab");
+TEST_MATCH(290, "(x\\Ky)z(?1)", "xyzxy"); // \K inside a called group
+
+#if CTRE_CNTTP_COMPILER_CHECK
+// the reported match starts at the point of the (last executed) \K
+static_assert(ctre::search<"foo\\Kbar">("xxfoobarxx"sv).to_view() == "bar"sv);
+static_assert(ctre::match<"a\\Kb\\Kc">("abc"sv).to_view() == "c"sv);
+static_assert(ctre::match<"(a)\\K(b)">("ab"sv).to_view() == "b"sv);
+static_assert(ctre::match<"(a)\\K(b)">("ab"sv).get<1>() == "a"sv); // captures before \K survive
+static_assert(ctre::match<"(?:a\\Kb|cd)">("cd"sv).to_view() == "cd"sv); // only the taken path applies
+static_assert(ctre::search<"[0-9]+\\K[a-z]+">("123abc"sv).to_view() == "abc"sv);
+static_assert(ctre::match<"abc\\K">("abc"sv).to_view().empty());
+#endif
+
 

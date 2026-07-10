@@ -68,9 +68,16 @@ constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator curre
 }
 
 // mark end of outer capture
-template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename... Tail> 
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename... Tail>
 constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<end_mark, Tail...>) noexcept {
 	return evaluate(begin, current, last, f, captures.set_end_mark(current), ctll::list<Tail...>());
+}
+
+// match point reset \K: restart the outer capture here; everything matched
+// so far stays required but is left out of the reported match
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename... Tail>
+constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<match_point_reset, Tail...>) noexcept {
+	return evaluate(begin, current, last, f, captures.set_start_mark(current), ctll::list<Tail...>());
 }
 
 // mark end of cycle

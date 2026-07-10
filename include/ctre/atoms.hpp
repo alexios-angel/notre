@@ -78,6 +78,10 @@ struct assert_subject_end_line{ };
 struct assert_line_begin { };
 struct assert_line_end { };
 
+// match point reset \K: everything before it must match, but the reported
+// match (capture 0) starts here
+struct match_point_reset { };
+
 template <typename> struct mode_switch { };
 
 }
