@@ -10,7 +10,6 @@
 * `\X` unicode grapheme cluster
 * boundaries other than `^$`
 * atomic groups
-* comments
 * options/modes
 * subroutines
 * conditional patterns

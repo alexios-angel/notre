@@ -54,13 +54,13 @@ What the library can do:
 * Lazy and greedy quantifiers
 * Multiline matching (`multiline_*` function variants)
 * Case-insensitive matching (`ctre::case_insensitive` modifier or inline `(?i)`)
+* Comments with the `(?#...)` syntax
 * Unicode properties (`\p{...}`) and UTF-8 support
 * Everything works in `constexpr` context (you can `static_assert` a match)
 
 The library implements most of the PCRE syntax with a few exceptions:
 
 * callouts
-* comments
 * conditional patterns
 * control characters (`\cX`)
 * match point reset (`\K`)

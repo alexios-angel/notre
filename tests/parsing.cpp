@@ -171,4 +171,12 @@ static_assert(!CTRE_TEST("[\\A]"));
 static_assert(!CTRE_TEST("\\i")); // this is not existing backslash
 static_assert(CTRE_TEST("(.*)\\1"));
 
+// comments
+static_assert(CTRE_TEST("(?#comment)"));
+static_assert(CTRE_TEST("(?#)"));
+static_assert(CTRE_TEST("a(?#comment)b"));
+static_assert(CTRE_TEST("(?#anything but a close paren: [{(^$.*+?|\\)"));
+static_assert(!CTRE_TEST("(?#unterminated"));
+static_assert(!CTRE_TEST("(?#x))")); // ends at the first close paren; stray paren is an error
+
 

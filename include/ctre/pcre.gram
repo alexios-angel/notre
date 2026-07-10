@@ -22,12 +22,14 @@ angle_close={>}
 equal_sign={=}
 exclamation_mark={!}
 doublequote={\"}
+hash={\#}
+comment_chars=sigma-{)}
 
 escape_alphanum={b,c,h,i,j,k,l,m,o,q,v,y,z,A,B,C,E,F,G,H,I,J,K,L,M,O,Q,U,V,X,Y,Z,1,2,3,4,5,6,7,8,9}
 escape_backreference={1,2,3,4,5,6,7,8,9}
 hexdec={0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,A,B,C,D,E,F}
 octal={0,1,2,3,4,5,6,7}
-nonspecial_characters={/,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,0,1,2,3,4,5,6,7,8,9,\,,:,!,=,_,\"}
+nonspecial_characters={/,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,0,1,2,3,4,5,6,7,8,9,\,,:,!,=,_,\",\#}
 nonspecial_characters_in_class={/,_,+,*,(,),.,$,\{,\},?,!,=,<,>,|,\"}
 alpha_characters={a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,_}
 alphanum_characters={a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,0,1,2,3,4,5,6,7,8,9,_}
@@ -77,6 +79,11 @@ block->questionmark,exclamation_mark,[reset_capture],[start_lookahead_negative],
 block->questionmark,angle_open,exclamation_mark,[reset_capture],[start_lookbehind_negative],<content_in_capture>,[look_finish],close
 block->questionmark,colon,[reset_capture],<content_in_capture>,close
 block->questionmark,angle_open,<block_name>,angle_close,<content_in_capture>,[make_capture_with_name],close
+block->questionmark,hash,<comment_body>
+
+# comment runs to the first close parenthesis; no nesting, no escaping
+comment_body->close,[make_comment]
+comment_body->comment_chars,<comment_body>
 
 block_name->alpha_characters,[push_name],<block_name2>
 block_name2->alphanum_characters,[push_name],<block_name2>|epsilon

@@ -42,6 +42,7 @@ struct pcre_actions {
 #include "actions/capture.inc.hpp"
 #include "actions/characters.inc.hpp"
 #include "actions/class.inc.hpp"
+#include "actions/comment.inc.hpp"
 #include "actions/fusion.inc.hpp"
 #include "actions/hexdec.inc.hpp"
 #include "actions/look.inc.hpp"

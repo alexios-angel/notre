@@ -75,6 +75,7 @@ if(CTRE_MODULE)
 			include/ctre/actions/fusion.inc.hpp
 			include/ctre/actions/asserts.inc.hpp
 			include/ctre/actions/capture.inc.hpp
+			include/ctre/actions/comment.inc.hpp
 			include/ctre/actions/named_class.inc.hpp
 			include/ctre/actions/backreference.inc.hpp
 			include/ctre/actions/options.inc.hpp

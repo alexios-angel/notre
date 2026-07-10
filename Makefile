@@ -5,7 +5,10 @@ default: all
 TARGETS := $(wildcard tests/benchmark-exec/*.cpp)
 IGNORE := $(wildcard tests/benchmark/*.cpp) $(wildcard tests/benchmark-exec/*.cpp)
 
-DESATOMAT := /bin/false
+# LL1q parser generator: https://github.com/alexios-angel/Tablewright
+# (open-source replacement for the original closed-source desatomat tool;
+# needs python3 with the lark package)
+TABLEWRIGHT := tablewright
 
 CXX_STANDARD := 20
 
@@ -54,7 +57,7 @@ regrammar:
 	
 include/ctre/pcre.hpp: include/ctre/pcre.gram
 	@echo "LL1q $<"
-	@$(DESATOMAT) --ll --q --input=include/ctre/pcre.gram --output=include/ctre/ --generator=cpp_ctll_v2  --cfg:fname=pcre.hpp --cfg:namespace=ctre --cfg:guard=CTRE__PCRE__HPP --cfg:grammar_name=pcre
+	@$(TABLEWRIGHT) --ll --q --input=include/ctre/pcre.gram --output=include/ctre/ --generator=cpp_ctll_v2  --cfg:fname=pcre.hpp --cfg:namespace=ctre --cfg:guard=CTRE__PCRE__HPP --cfg:grammar_name=pcre
 	
 mtent12.zip:
 	curl -s http://www.gutenberg.org/files/3200/old/mtent12.zip -o mtent12.zip

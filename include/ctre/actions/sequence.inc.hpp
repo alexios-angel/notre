@@ -28,5 +28,19 @@ template <auto V, auto A, auto... Bs, typename... Sq, typename... Ts, typename P
 	return pcre_context{ctll::push_front(sequence<string<A,Bs...>,Sq...>(), ctll::list<Ts...>()), subject.parameters};
 }
 
+// make_sequence (an empty item, left behind by a comment, vanishes in a sequence)
+template <auto V, typename A, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_sequence, ctll::term<V>, pcre_context<ctll::list<empty,A,Ts...>, Parameters> subject) {
+	return pcre_context{ctll::push_front(A(), ctll::list<Ts...>()), subject.parameters};
+}
+template <auto V, typename B, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_sequence, ctll::term<V>, pcre_context<ctll::list<B,empty,Ts...>, Parameters> subject) {
+	return pcre_context{ctll::push_front(B(), ctll::list<Ts...>()), subject.parameters};
+}
+template <auto V, typename... Bs, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_sequence, ctll::term<V>, pcre_context<ctll::list<sequence<Bs...>,empty,Ts...>, Parameters> subject) {
+	return pcre_context{ctll::push_front(sequence<Bs...>(), ctll::list<Ts...>()), subject.parameters};
+}
+template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_sequence, ctll::term<V>, pcre_context<ctll::list<empty,empty,Ts...>, Parameters> subject) {
+	return pcre_context{ctll::push_front(empty(), ctll::list<Ts...>()), subject.parameters};
+}
+
 
 #endif

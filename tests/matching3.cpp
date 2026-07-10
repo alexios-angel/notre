@@ -249,4 +249,20 @@ TEST_MATCH(235, "[^]?", "");
 // issue #357 (unsigned chars vs signed chars)
 TEST_MATCH(236, "«««", "«««");
 
+// comments (?#...)
+TEST_MATCH(237, "(?#comment)abc", "abc");
+TEST_MATCH(238, "a(?#comment)b", "ab");
+TEST_MATCH(239, "ab(?#comment)", "ab");
+TEST_MATCH(240, "(?#)x", "x");
+TEST_MATCH(241, "(?#a)(?#b)x", "x");
+TEST_MATCH(242, "(?#only)", "");
+TEST_MATCH(243, "(a(?#x)b)c", "abc");
+TEST_MATCH(244, "a|(?#x)b", "b");
+TEST_MATCH(245, "a(?#[]{}(^$.*+?|\\)b", "ab"); // any special except close paren
+TEST_MATCH(246, "a(?#(inner)b", "ab"); // ends at the first close paren, no nesting
+TEST_NOT_MATCH(247, "(?#x)a", "b");
+TEST_MATCH(248, "#+", "###"); // literal hash still matches
+TEST_MATCH(249, "[#a]+", "a#a");
+TEST_MATCH(250, "(#)x", "#x");
+
 
