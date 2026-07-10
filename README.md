@@ -1,3 +1,13 @@
+> **Fork notice:** This repository is a derivative work based on
+> [hanickadot/compile-time-regular-expressions](https://github.com/hanickadot/compile-time-regular-expressions)
+> ("CTRE") by Hana Dusíková and contributors, licensed under the Apache
+> License 2.0 with LLVM Exceptions. It was created by manually cloning the
+> upstream source and reinitializing git history rather than using GitHub's
+> fork feature, so the original commit history and authorship metadata are
+> not preserved in this repo's `git log`. See [NOTICE](NOTICE) for full
+> attribution. All code as of the initial commit is unmodified upstream
+> code; changes made afterward are tracked in this repository's own history.
+
 # Compile Time Regular Expressions v3
 
 [![Build Status](https://github.com/hanickadot/compile-time-regular-expressions/actions/workflows/tests.yml/badge.svg)](https://github.com/hanickadot/compile-time-regular-expressions/actions/workflows/tests.yml)

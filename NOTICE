@@ -1,0 +1,33 @@
+This repository ("notre") is a derivative work based on:
+
+    Compile Time Regular Expressions (CTRE)
+    https://github.com/hanickadot/compile-time-regular-expressions
+    Copyright (c) Hana Dusikova and the CTRE contributors
+
+Original license: Apache License 2.0, with LLVM Exceptions (see LICENSE
+in this repository, reproduced unmodified from upstream).
+
+Why this file exists
+---------------------
+This repository was created by manually cloning the upstream source and
+reinitializing git history, rather than using GitHub's "Fork" feature,
+because forking was blocked by the upstream maintainer. As a result, the
+commit history, authorship metadata, and contributor attribution that a
+native GitHub fork would normally preserve are not present in this
+repository's git log. This file exists to preserve that attribution, as
+required by Section 4(c) of the Apache License 2.0.
+
+Authorship
+----------
+As of the initial commit ("fork from CTRE"), all source code in this
+repository is the unmodified, original work of Hana Dusikova and the CTRE
+contributors, copied from the upstream repository above. Any changes made
+in commits after that point are authored by Alexios Angel
+(github.com/alexios-angel) unless a commit message or file states
+otherwise.
+
+Upstream project
+-----------------
+Please direct questions about CTRE's original design, behavior, or license
+to the upstream project first. Only file issues here for problems
+introduced by changes made in this fork.
