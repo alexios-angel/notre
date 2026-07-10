@@ -4,6 +4,7 @@
 #include "flags_and_modes.hpp"
 #include "atoms.hpp"
 #include "atoms_unicode.hpp"
+#include "callouts.hpp"
 #include "starts_with_anchor.hpp"
 #include "utility.hpp"
 #include "return_type.hpp"
@@ -103,6 +104,26 @@ constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator curre
 // (?(DEFINE)...) is never evaluated
 template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename... Content, typename... Tail>
 constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<define_group<Content...>, Tail...>) noexcept {
+	return evaluate(begin, current, last, f, captures, ctll::list<Tail...>());
+}
+
+// callouts without a bound handler are no-ops
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, size_t Number, typename... Tail>
+constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<callout_numbered<Number>, Tail...>) noexcept {
+	return evaluate(begin, current, last, f, captures, ctll::list<Tail...>());
+}
+
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename Name, typename... Tail>
+constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<callout_named<Name>, Tail...>) noexcept {
+	return evaluate(begin, current, last, f, captures, ctll::list<Tail...>());
+}
+
+// a bound callout invokes the handler, which may veto this position
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename Handler, typename Name, size_t Number, typename... Tail>
+constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<callout<Handler, Name, Number>, Tail...>) noexcept {
+	if (invoke_callout<Handler, Name, Number>(begin, current, last, captures) != callout_result::proceed) {
+		return not_matched;
+	}
 	return evaluate(begin, current, last, f, captures, ctll::list<Tail...>());
 }
 

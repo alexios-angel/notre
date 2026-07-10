@@ -32,6 +32,9 @@ struct pcre {
 	struct block_questionmark {};
 	struct block_questionmark_P {};
 	struct block_questionmark_angle_open {};
+	struct callout_dq_chars_push_name_anon {};
+	struct callout_kind {};
+	struct callout_sq_chars_push_name_anon {};
 	struct character {};
 	struct character_class {};
 	struct character_class_sopen {};
@@ -121,6 +124,9 @@ struct pcre {
 	struct make_alternate: ctll::action {};
 	struct make_atomic: ctll::action {};
 	struct make_back_reference: ctll::action {};
+	struct make_callout: ctll::action {};
+	struct make_callout_named: ctll::action {};
+	struct make_callout_numbered: ctll::action {};
 	struct make_capture: ctll::action {};
 	struct make_capture_with_name: ctll::action {};
 	struct make_comment: ctll::action {};
@@ -217,9 +223,13 @@ struct pcre {
 	using colon = ctll::term<':'>;
 	using P = ctll::term<'P'>;
 	using hash = ctll::term<'#'>;
+	using C = ctll::term<'C'>;
 	using minus = ctll::term<'-'>;
 	using ampersand = ctll::term<'&'>;
 	using comment_chars = ctll::neg_set<'\x29'>;
+	using callout_dq_chars = ctll::neg_set<'\"'>;
+	using doublequote = ctll::term<'\"'>;
+	using callout_sq_chars = ctll::neg_set<'\''>;
 	using i = ctll::term<'i'>;
 	using c = ctll::term<'c'>;
 	using s = ctll::term<'s'>;
@@ -382,6 +392,7 @@ struct pcre {
 	static constexpr auto rule(block_questionmark, P) -> ctll::push<ctll::anything, block_questionmark_P>;
 	static constexpr auto rule(block_questionmark, apostrophe) -> ctll::push<ctll::anything, block_name, apostrophe, content_in_capture, make_capture_with_name, close>;
 	static constexpr auto rule(block_questionmark, hash) -> ctll::push<ctll::anything, comment_body>;
+	static constexpr auto rule(block_questionmark, C) -> ctll::push<ctll::anything, callout_kind>;
 	static constexpr auto rule(block_questionmark, num) -> ctll::push<number, make_subroutine_call, close>;
 	static constexpr auto rule(block_questionmark, minus) -> ctll::push<ctll::anything, number, make_subroutine_call_behind, close>;
 	static constexpr auto rule(block_questionmark, plus) -> ctll::push<ctll::anything, number, make_subroutine_call_ahead, close>;
@@ -394,6 +405,11 @@ struct pcre {
 
 	static constexpr auto rule(comment_body, close) -> ctll::push<comment_chars_anon, close, make_comment>;
 	static constexpr auto rule(comment_body, comment_chars) -> ctll::push<comment_chars_anon, close, make_comment>;
+
+	static constexpr auto rule(callout_kind, close) -> ctll::push<ctll::anything, make_callout>;
+	static constexpr auto rule(callout_kind, num) -> ctll::push<number, make_callout_numbered, close>;
+	static constexpr auto rule(callout_kind, doublequote) -> ctll::push<ctll::anything, callout_dq_chars, push_name, callout_dq_chars_push_name_anon, doublequote, make_callout_named, close>;
+	static constexpr auto rule(callout_kind, apostrophe) -> ctll::push<ctll::anything, callout_sq_chars, push_name, callout_sq_chars_push_name_anon, apostrophe, make_callout_named, close>;
 
 	static constexpr auto rule(condition_questionmark_angle_open, equal_sign) -> ctll::push<ctll::anything, start_lookbehind_positive, content_in_capture, look_finish, close, condition_branches>;
 	static constexpr auto rule(condition_questionmark_angle_open, exclamation_mark) -> ctll::push<ctll::anything, start_lookbehind_negative, content_in_capture, look_finish, close, condition_branches>;
@@ -594,6 +610,12 @@ struct pcre {
 
 	static constexpr auto rule(comment_chars_anon, comment_chars) -> ctll::push<ctll::anything, comment_chars_anon>;
 	static constexpr auto rule(comment_chars_anon, close) -> ctll::epsilon;
+
+	static constexpr auto rule(callout_dq_chars_push_name_anon, callout_dq_chars) -> ctll::push<ctll::anything, push_name, callout_dq_chars_push_name_anon>;
+	static constexpr auto rule(callout_dq_chars_push_name_anon, doublequote) -> ctll::epsilon;
+
+	static constexpr auto rule(callout_sq_chars_push_name_anon, callout_sq_chars) -> ctll::push<ctll::anything, push_name, callout_sq_chars_push_name_anon>;
+	static constexpr auto rule(callout_sq_chars_push_name_anon, apostrophe) -> ctll::epsilon;
 
 	static constexpr auto rule(alphanum_characters_push_name_anon, alphanum_characters) -> ctll::push<ctll::anything, push_name, alphanum_characters_push_name_anon>;
 	static constexpr auto rule(alphanum_characters_push_name_anon, quote__close__angle_close__cclose) -> ctll::epsilon;

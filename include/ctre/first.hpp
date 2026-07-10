@@ -74,6 +74,25 @@ constexpr auto first(ctll::list<Content...> l, ctll::list<define_group<Def...>, 
 	return first(l, ctll::list<Tail...>{});
 }
 
+// unbound callouts are no-ops and zero-width: look through them
+template <typename... Content, size_t Number, typename... Tail>
+constexpr auto first(ctll::list<Content...> l, ctll::list<callout_numbered<Number>, Tail...>) noexcept {
+	return first(l, ctll::list<Tail...>{});
+}
+
+template <typename... Content, typename Name, typename... Tail>
+constexpr auto first(ctll::list<Content...> l, ctll::list<callout_named<Name>, Tail...>) noexcept {
+	return first(l, ctll::list<Tail...>{});
+}
+
+// a BOUND callout is opaque: it can veto a position, so the possessive
+// optimization of preceding repeats (which assumes backtracking cannot
+// help when first sets do not collide) must stay disabled around it
+template <typename... Content, typename Handler, typename Name, size_t Number, typename... Tail>
+constexpr auto first(ctll::list<Content...>, ctll::list<callout<Handler, Name, Number>, Tail...>) noexcept {
+	return ctll::list<can_be_anything>{};
+}
+
 // asserts
 template <typename... Content, typename... Tail> 
 constexpr auto first(ctll::list<Content...> l, ctll::list<assert_subject_begin, Tail...>) noexcept {

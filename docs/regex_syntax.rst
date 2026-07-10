@@ -3,7 +3,6 @@ Regex Syntax
 
 The library supports most of the `PCRE <pcre.org>`_ syntax with a few exceptions:
 
-- callouts
 - conditional patterns with a recursion condition ((?(R)...); other conditions work)
 - horizontal / vertical character classes (\\h\\H\\v\\V)
 - match point reset inside lookarounds (\\K elsewhere is supported)

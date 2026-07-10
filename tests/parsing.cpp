@@ -280,4 +280,17 @@ static_assert(CTRE_TEST("\\X"));
 static_assert(CTRE_TEST("\\X+"));
 static_assert(!CTRE_TEST("[\\X]")); // not valid inside a class
 
+// callouts
+static_assert(CTRE_TEST("(?C)"));
+static_assert(CTRE_TEST("(?C0)"));
+static_assert(CTRE_TEST("(?C255)"));
+static_assert(CTRE_TEST("(?C'name')"));
+static_assert(CTRE_TEST("(?C\"name\")"));
+static_assert(CTRE_TEST("(?C'a b c!')")); // any characters except the delimiter
+static_assert(!CTRE_TEST("(?C'')")); // empty name
+static_assert(!CTRE_TEST("(?Cx)")); // neither number nor delimited name
+static_assert(!CTRE_TEST("(?C'unterminated"));
+static_assert(!CTRE_TEST("(?C7"));
+static_assert(!CTRE_TEST("(?C'mixed\")")); // mismatched delimiters
+
 

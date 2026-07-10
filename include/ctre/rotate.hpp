@@ -72,6 +72,11 @@ template <typename Name> static auto rotate(back_reference_with_name<Name>) -> b
 template <size_t Index> static auto rotate(subroutine_call<Index>) -> subroutine_call<Index>;
 template <typename Name> static auto rotate(subroutine_call_with_name<Name>) -> subroutine_call_with_name<Name>;
 
+// callouts are zero-width leaves
+template <size_t Number> static auto rotate(callout_numbered<Number>) -> callout_numbered<Number>;
+template <typename Name> static auto rotate(callout_named<Name>) -> callout_named<Name>;
+template <typename Handler, typename Name, size_t Number> static auto rotate(callout<Handler, Name, Number>) -> callout<Handler, Name, Number>;
+
 // conditional branches rotate (bodies, not trailing return types, so the
 // recursive rotate calls see members declared later in this class);
 // a DEFINE body is never evaluated

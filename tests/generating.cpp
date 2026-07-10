@@ -244,6 +244,13 @@ static_assert(same_f(CTRE_GEN("(?(?=x)a|b)"), ctre::select<ctre::sequence<ctre::
 // DEFINE keeps its body only for subroutine lookups
 static_assert(same_f(CTRE_GEN("(?(DEFINE)(?<d>x))"), ctre::define_group<ctre::capture_with_name<1,ctre::id<'d'>,ctre::character<'x'>>>()));
 
+// callouts parse into unbound zero-width markers
+static_assert(same_f(CTRE_GEN("(?C)"), ctre::callout_numbered<0>()));
+static_assert(same_f(CTRE_GEN("(?C42)"), ctre::callout_numbered<42>()));
+static_assert(same_f(CTRE_GEN("(?C'ab')"), ctre::callout_named<ctre::id<'a','b'>>()));
+static_assert(same_f(CTRE_GEN("(?C\"ab\")"), ctre::callout_named<ctre::id<'a','b'>>()));
+static_assert(same_f(CTRE_GEN("x(?C1)y"), ctre::sequence<ctre::character<'x'>,ctre::callout_numbered<1>,ctre::character<'y'>>()));
+
 // octal and control character escapes produce plain characters
 static_assert(same_f(CTRE_GEN("\\o{101}"), ctre::character<'A'>()));
 static_assert(same_f(CTRE_GEN("\\077"), ctre::character<'?'>()));

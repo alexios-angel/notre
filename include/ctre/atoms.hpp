@@ -59,6 +59,14 @@ template <typename Name> struct subroutine_call_with_name { };
 template <size_t Index, typename Yes, typename No> struct condition_capture { };
 template <typename Name, typename Yes, typename No> struct condition_capture_with_name { };
 
+// callouts (?Cn) / (?C"name"): zero-width observation points. As parsed
+// they carry only their number or name and evaluate as no-ops; when a
+// handler is supplied via ctre::with_callouts, bind_callouts rewrites them
+// into the bound form which invokes the handler (callouts.hpp)
+template <size_t Number> struct callout_numbered { };
+template <typename Name> struct callout_named { };
+template <typename Handler, typename Name, size_t Number> struct callout { };
+
 // (?(DEFINE)...): never evaluated; the content only defines groups to be
 // used by subroutine calls
 template <typename... Content> struct define_group { };

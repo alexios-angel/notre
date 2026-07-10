@@ -42,6 +42,7 @@ struct pcre_actions {
 #include "actions/atomic_group.inc.hpp"
 #include "actions/backreference.inc.hpp"
 #include "actions/boundaries.inc.hpp"
+#include "actions/callout.inc.hpp"
 #include "actions/capture.inc.hpp"
 #include "actions/characters.inc.hpp"
 #include "actions/class.inc.hpp"

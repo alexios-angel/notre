@@ -32,6 +32,7 @@ More info at [compile-time.re](https://compile-time.re/). Original upstream docu
 - [Iterating over multiple matches](#iterating-over-multiple-matches)
 - [Working with results](#working-with-results)
 - [Flags and modes](#flags-and-modes)
+- [Callouts](#callouts)
 - [Pattern syntax variants (C++17 / C++20)](#pattern-syntax-variants)
 - [Unicode support](#unicode-support)
 - [Examples](#examples)
@@ -58,13 +59,13 @@ What the library can do:
 * Multiline matching (`multiline_*` function variants)
 * Case-insensitive matching (`ctre::case_insensitive` modifier or inline `(?i)`)
 * Comments with the `(?#...)` syntax
+* Callouts — `(?Cn)` and `(?C'name')` observation points that can veto match positions, dispatched through a user handler (see [Callouts](#callouts))
 * Octal escapes (`\o{ddd...}` and `\0dd`) and control characters (`\cX`)
 * Unicode properties (`\p{...}`), UTF-8 support, and grapheme clusters (`\X`, approximated as an atomic `\P{M}\p{M}*`)
 * Everything works in `constexpr` context (you can `static_assert` a match)
 
 The library implements most of the PCRE syntax with a few exceptions:
 
-* callouts
 * named characters
 * options / modes — except the inline mode switches `(?i)`, `(?c)`, `(?s)`, `(?m)` (and combinations like `(?im)`), which are supported
 * recursion — `(?R)`, `(?0)`, and recursive subroutine calls (non-recursive calls are supported and expanded at compile time; unbounded recursion cannot be)
@@ -210,6 +211,39 @@ ctre::multiline_search<"^bar$">("foo\nbar");
 ```
 
 Every function has a `multiline_` twin: `multiline_match`, `multiline_search`, `multiline_starts_with`, `multiline_search_all`, `multiline_split`, `multiline_tokenize`, `multiline_iterator` (+ `multiline_sentinel`).
+
+## Callouts
+
+`(?Cn)` (numbered) and `(?C'name')` / `(?C"name")` (named) are zero-width observation points. Attach implementations with the `ctre::with_callouts` modifier as inline entries — one `ctll::callout` per name or number:
+
+```c++
+// the veto makes the greedy + backtrack: group 1 is "12", not "123"
+ctre::search<"([0-9]+)(?C'limit')", ctre::with_callouts<
+    ctll::callout<"limit", [](const auto & c) { return c.position - c.match_start <= 2; }>,
+    ctll::callout<2,       [](const auto & c) { /* pure observer for (?C2) */ }>
+>>("xx123yy");
+```
+
+Each entry is matched to its callout at compile time (numbers by their decimal spelling: `ctll::callout<7, f>` serves `(?C7)`) and invoked directly, with no lookup at match time. The callable receives a `ctre::callout_data` — the callout's number and name, the whole subject, and the code-unit offsets of the current position and the match attempt's start — and may return `ctre::callout_result`, `bool` (`true` = proceed), or `void` (observer). `fail`/`false` vetoes the position and normal backtracking continues, like PCRE's nonzero callout return. Generic lambdas work with any subject character type.
+
+For dispatch chosen at match time instead, pass one handler type whose static `callouts()` returns a `ctll::map` from names to `ctll::function`s:
+
+```c++
+struct my_handler {
+    static constexpr auto callouts() {
+        return ctll::map{
+            std::pair{"limit", ctll::function<ctre::callout_result(const ctre::callout_data<char> &)>(
+                [](const auto & c) {
+                    return c.position - c.match_start <= 2 ? ctre::callout_result::proceed
+                                                           : ctre::callout_result::fail;
+                })},
+        };
+    }
+};
+ctre::search<"([0-9]+)(?C'limit')", ctre::with_callouts<my_handler>>("xx123yy");
+```
+
+In both forms, a callout with no matching entry or key — or a pattern used without the modifier — is a no-op, like PCRE with no callout function set. Both require C++20 (entries need class-type template parameters, the map form needs `ctll::function`). Restrictions: the subject must be a contiguous character range (no zero-terminated pointers, no UTF-8 range), and callouts inside lookbehinds are not supported (both are compile errors).
 
 ## Pattern syntax variants
 

@@ -80,6 +80,7 @@ if(CTRE_MODULE)
 			include/ctre/actions/comment.inc.hpp
 			include/ctre/actions/named_class.inc.hpp
 			include/ctre/actions/backreference.inc.hpp
+			include/ctre/actions/callout.inc.hpp
 			include/ctre/actions/options.inc.hpp
 			include/ctre/actions/atomic_group.inc.hpp
 			include/ctre/actions/set.inc.hpp
@@ -91,6 +92,7 @@ if(CTRE_MODULE)
 			include/ctre/operators.hpp
 			include/ctre/pcre.hpp
 			include/ctre/atoms_unicode.hpp
+			include/ctre/callouts.hpp
 			include/ctre/range.hpp
 			include/ctre/wrapper.hpp
 			include/ctre/first.hpp
@@ -101,6 +103,7 @@ if(CTRE_MODULE)
 			include/unicode-db/unicode-db.hpp
 			include/ctll/parser.hpp
 			include/ctll/actions.hpp
+			include/ctll/callout.hpp
 			include/ctll/fixed_string.hpp
 			include/ctll/function.hpp
 			include/ctll/map.hpp

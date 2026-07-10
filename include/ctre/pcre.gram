@@ -64,6 +64,10 @@ ampersand={&}
 # parenthesis (PCRE: no nesting, no escaping inside (?#...)).
 comment_chars=sigma-{)}
 
+# Callout names may contain every character except their closing delimiter.
+callout_dq_chars=sigma-{\"}
+callout_sq_chars=sigma-{'}
+
 # ---------------------------------------------------------------------------
 # Terminal sets: character groups
 # ---------------------------------------------------------------------------
@@ -164,6 +168,16 @@ block->questionmark,apostrophe,<block_name>,apostrophe,<content_in_capture>,[mak
 # Comment: (?#...) runs to the first close parenthesis and vanishes.
 block->questionmark,hash,<comment_body>
 comment_body->comment_chars*,close,[make_comment]
+
+# Callouts: (?C) and (?Cn) are numbered, (?C"name") and (?C'name') named.
+# They are zero-width observation points; a handler supplied with the
+# ctre::with_callouts modifier is bound into the atoms before evaluation
+# (callouts.hpp) and may veto the match at that position.
+block->questionmark,C,<callout_kind>
+callout_kind->close,[make_callout]
+callout_kind-><number>,[make_callout_numbered],close
+callout_kind->doublequote,callout_dq_chars,[push_name],(callout_dq_chars,[push_name])*,doublequote,[make_callout_named],close
+callout_kind->apostrophe,callout_sq_chars,[push_name],(callout_sq_chars,[push_name])*,apostrophe,[make_callout_named],close
 
 # Subroutine calls: (?N), relative (?+N)/(?-N), (?&name) and (?P>name).
 # A call is inlined after parsing as an atomic, non-capturing copy of the

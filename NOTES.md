@@ -11,7 +11,6 @@
 * atomic groups
 * options/modes
 * recursion (subroutine calls are supported, but must not be recursive)
-* callouts
 
 
 # Other unsupported "things"

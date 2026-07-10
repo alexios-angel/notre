@@ -12,6 +12,12 @@ struct case_insensitive { };
 using ci = case_insensitive;
 using cs = case_sensitive;
 
+// modifier attaching callout implementations to the pattern: either one
+// handler type with a static callouts() map, or a pack of inline
+// ctll::callout entries; bound into the callout atoms before evaluation
+// (callouts.hpp)
+template <typename... Handler> struct with_callouts { };
+
 template <typename... Flags> struct flag_list { };
 
 struct flags {
@@ -68,6 +74,9 @@ struct flags {
 	constexpr CTRE_FORCE_INLINE void set_flag(ctre::case_sensitive) noexcept {
 		case_insensitive = false;
 	}
+
+	// the callout handler is bound into the AST, not into the runtime flags
+	template <typename... Handler> constexpr CTRE_FORCE_INLINE void set_flag(ctre::with_callouts<Handler...>) noexcept { }
 };
 
 constexpr CTRE_FORCE_INLINE auto not_empty_match(flags f) {
