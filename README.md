@@ -58,18 +58,17 @@ What the library can do:
 * Multiline matching (`multiline_*` function variants)
 * Case-insensitive matching (`ctre::case_insensitive` modifier or inline `(?i)`)
 * Comments with the `(?#...)` syntax
-* Unicode properties (`\p{...}`) and UTF-8 support
+* Octal escapes (`\o{ddd...}` and `\0dd`) and control characters (`\cX`)
+* Unicode properties (`\p{...}`), UTF-8 support, and grapheme clusters (`\X`, approximated as an atomic `\P{M}\p{M}*`)
 * Everything works in `constexpr` context (you can `static_assert` a match)
 
 The library implements most of the PCRE syntax with a few exceptions:
 
 * callouts
-* control characters (`\cX`)
 * named characters
-* octal numbers
 * options / modes — except the inline mode switches `(?i)`, `(?c)`, `(?s)`, `(?m)` (and combinations like `(?im)`), which are supported
 * recursion — `(?R)`, `(?0)`, and recursive subroutine calls (non-recursive calls are supported and expanded at compile time; unbounded recursion cannot be)
-* unicode grapheme cluster (`\X`)
+* octal escapes without a leading zero (`\100`) — write `\o{100}` or `\040`; `\1`..`\9` always mean backreferences
 
 More documentation on the PCRE syntax at [pcre.org](https://www.pcre.org/current/doc/html/pcre2syntax.html).
 

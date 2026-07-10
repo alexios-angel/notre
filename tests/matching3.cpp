@@ -364,4 +364,36 @@ static_assert(ctre::match<"(a)?((?(1)x|y))z(?2)">("axzx"sv));
 static_assert(ctre::match<"(a)?((?(1)x|y))z(?2)">("yzy"sv));
 #endif
 
+// octal escapes: \o{ddd...} and \0 with up to two more digits
+TEST_MATCH(314, "\\o{101}", "A");
+TEST_MATCH(315, "a\\o{7}b", "a\ab");
+TEST_MATCH(316, "\\07", "\a");
+TEST_MATCH(317, "\\077", "?");
+TEST_MATCH(318, "\\0777", "?7"); // two digits at most, then a literal
+TEST_MATCH(319, "\\011", "\t");
+TEST_MATCH(320, "[\\o{101}-\\o{132}]+", "AZ"); // usable as range endpoints
+TEST_MATCH(321, "[\\01-\\05]+", "\x01\x03\x05");
+TEST_NOT_MATCH(322, "[\\01-\\05]", "\x06");
+
+// control characters \cX
+TEST_MATCH(323, "\\cA", "\x01");
+TEST_MATCH(324, "\\cj", "\n"); // lowercase is uppercased first
+TEST_MATCH(325, "\\cI", "\t");
+TEST_MATCH(326, "\\c[", "\x1b"); // ESC
+TEST_MATCH(327, "\\c?", "\x7f"); // DEL
+TEST_MATCH(328, "[\\cA-\\cZ]+", "\x01\x0a\x1a");
+TEST_NOT_MATCH(329, "\\cA", "\x02");
+TEST_MATCH(330, "abc", "abc"); // literal c is unaffected
+
+#if CTRE_CNTTP_COMPILER_CHECK && defined(__cpp_char8_t)
+// grapheme cluster \X (atomic \P{M}\p{M}* approximation);
+// "e\u0301" is a decomposed e-acute: two code points, one cluster
+static_assert(ctre::match<"\\X">(u8"a"sv));
+static_assert(ctre::match<"\\X">(u8"e\u0301"sv));
+static_assert(!ctre::match<".">(u8"e\u0301"sv)); // unlike the dot
+static_assert(ctre::match<"\\X\\X">(u8"e\u0301a"sv));
+static_assert(!ctre::match<"\\X">(u8"e\u0301a"sv));
+static_assert(ctre::match<"\\X+">(u8"e\u0301a\u0300u\u0308"sv));
+#endif
+
 

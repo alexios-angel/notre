@@ -1,13 +1,12 @@
 # Unsupported PCRE constructs
 
-* `\0dd` `\ddd` `\0{dd...}` octal numbers
+* `\ddd` octal numbers without the leading zero (`\o{ddd}` and `\0dd` work)
 * `\Q...\E` quoting
-* `\cx` control characters
 * `\C` data unit
 * `\h` `\H` horizontal character classes
 * `\v` `\V` vertical character classes
 * `\p{xx}` `\P{xx}` character properties
-* `\X` unicode grapheme cluster
+* `\X` matches the atomic `\P{M}\p{M}*` approximation, not full UAX #29 clusters
 * boundaries other than `^$`
 * atomic groups
 * options/modes

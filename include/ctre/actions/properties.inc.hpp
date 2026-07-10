@@ -70,4 +70,16 @@ template <auto V, auto... Value, auto... Name, typename... Ts, typename Paramete
 	}
 }
 
+// make_grapheme_cluster (\X): approximated as an atomic \P{M}\p{M}* -
+// one non-mark code point followed by all of its combining marks
+template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_grapheme_cluster, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
+	// derive 'M' from V (always 'X') so the lookup stays dependent and is
+	// only evaluated at instantiation, when the unicode db definitions exist
+	constexpr char name[1]{static_cast<char>(V - 'X' + 'M')};
+	constexpr auto p = uni::detail::binary_prop_from_string(get_string_view(name));
+	static_assert(!uni::detail::is_unknown(p), "unicode database does not know the Mark (M) category");
+	using mark = make_binary_property<p>;
+	return pcre_context{ctll::push_front(atomic_group<negate<mark>, star<mark>>(), subject.stack), subject.parameters};
+}
+
 #endif

@@ -25,10 +25,6 @@ template <auto V, typename... Ts, typename Parameters> static constexpr auto app
 template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::push_character_newline, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
 	return pcre_context{ctll::push_front(character<'\x0A'>(), subject.stack), subject.parameters};
 }
-// push_character_null
-template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::push_character_null, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
-	return pcre_context{ctll::push_front(character<'\0'>(), subject.stack), subject.parameters};
-}
 // push_character_return_carriage
 template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::push_character_return_carriage, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
 	return pcre_context{ctll::push_front(character<'\x0D'>(), subject.stack), subject.parameters};
@@ -36,6 +32,13 @@ template <auto V, typename... Ts, typename Parameters> static constexpr auto app
 // push_character_tab
 template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::push_character_tab, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
 	return pcre_context{ctll::push_front(character<'\x09'>(), subject.stack), subject.parameters};
+}
+
+// make_control_character (\cX): uppercase X, then flip bit 0x40
+template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_control_character, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
+	constexpr auto uppercased = (V >= 'a' && V <= 'z') ? static_cast<decltype(V)>(V - 'a' + 'A') : V;
+	// the result is always ASCII (<= 0x7F), same as finish_hexdec's small case
+	return pcre_context{ctll::push_front(character<static_cast<char>(uppercased ^ 0x40)>(), subject.stack), subject.parameters};
 }
 
 #endif

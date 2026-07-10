@@ -23,6 +23,7 @@ struct pcre {
 	struct backslash_g_apostrophe {};
 	struct backslash_g_copen {};
 	struct backslash_range {};
+	struct backslash_range_c {};
 	struct backslash_range_u {};
 	struct backslash_range_x {};
 	struct backslash_set {};
@@ -61,6 +62,9 @@ struct pcre {
 	struct mode_switch2 {};
 	struct num_push_number_anon {};
 	struct number {};
+	struct octal_push_octal_anon {};
+	struct octal_suffix {};
+	struct octal_suffix2 {};
 	struct opt_content {};
 	struct preblock {};
 	struct property_name {};
@@ -125,6 +129,8 @@ struct pcre {
 	struct make_condition_capture_ref_behind: ctll::action {};
 	struct make_conditional_one: ctll::action {};
 	struct make_conditional_two: ctll::action {};
+	struct make_control_character: ctll::action {};
+	struct make_grapheme_cluster: ctll::action {};
 	struct make_lazy: ctll::action {};
 	struct make_optional: ctll::action {};
 	struct make_possessive: ctll::action {};
@@ -154,7 +160,6 @@ struct pcre {
 	struct push_character_escape: ctll::action {};
 	struct push_character_formfeed: ctll::action {};
 	struct push_character_newline: ctll::action {};
-	struct push_character_null: ctll::action {};
 	struct push_character_return_carriage: ctll::action {};
 	struct push_character_tab: ctll::action {};
 	struct push_empty: ctll::action {};
@@ -163,6 +168,7 @@ struct pcre {
 	struct push_name: ctll::action {};
 	struct push_not_word_boundary: ctll::action {};
 	struct push_number: ctll::action {};
+	struct push_octal: ctll::action {};
 	struct push_property_name: ctll::action {};
 	struct push_property_value: ctll::action {};
 	struct push_word_boundary: ctll::action {};
@@ -239,16 +245,19 @@ struct pcre {
 	using d = ctll::term<'d'>;
 	using b = ctll::term<'b'>;
 	using x = ctll::term<'x'>;
-	using set_6 = ctll::set<'\"','$','\x28','\x29','*','+','-','.','/','0','<','>','?','[','\\',']','^','a','e','f','n','r','t','u','x','\x7B','|','\x7D'>;
+	using set_6 = ctll::set<'\"','$','\x28','\x29','*','+','-','.','/','0','<','>','?','[','\\',']','^','a','c','e','f','n','o','r','t','u','x','\x7B','|','\x7D'>;
 	using D__H__N__P__S__V__W__d__h__p__s__v__w = ctll::set<'D','H','N','P','S','V','W','d','h','p','s','v','w'>;
 	using set_7 = ctll::set<'!','\"','#','$','&','\'','\x28','\x29','*','+',',','.','/','0','1','2','3','4','5','6','7','8','9',':','<','=','>','?','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','\x7B','|','\x7D'>;
 	using backslash_ = ctll::term<'\\'>;
 	using set_8 = ctll::set<'!','\"','#','$','&','\'','\x28','\x29','*','+',',','.','/','0','1','2','3','4','5','6','7','8','9',':','<','=','>','?','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','^','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','\x7B','|','\x7D'>;
 	using set_9 = ctll::set<'!','\"','#','$','&','\'','\x28','\x29','*','+',',','.','/','0','1','2','3','4','5','6','7','8','9',':','<','=','>','?','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','\x7B','|','\x7D'>;
 	using hexdec = ctll::set<'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','a','b','c','d','e','f'>;
-	using set_10 = ctll::set<'\"','$','\x28','\x29','*','+','-','.','/','<','>','?','[','\\',']','^','\x7B','|','\x7D'>;
+	using set_10 = ctll::set<'?','@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
+	using octal = ctll::set<'0','1','2','3','4','5','6','7'>;
+	using set_11 = ctll::set<'\"','$','\x28','\x29','*','+','-','.','/','<','>','?','[','\\',']','^','\x7B','|','\x7D'>;
 	using d0 = ctll::term<'0'>;
 	using f = ctll::term<'f'>;
+	using set_12 = ctll::set<'!','\"','#','$','&','\'','\x28','\x29','*','+',',','-','.','/','8','9',':','<','=','>','?','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','\x7B','|','\x7D'>;
 	using D = ctll::term<'D'>;
 	using W = ctll::term<'W'>;
 	using N = ctll::term<'N'>;
@@ -261,9 +270,10 @@ struct pcre {
 	using Z = ctll::term<'Z'>;
 	using B = ctll::term<'B'>;
 	using K = ctll::term<'K'>;
+	using X = ctll::term<'X'>;
 	using escape_backreference = ctll::set<'1','2','3','4','5','6','7','8','9'>;
 	using dot__alphanum_characters = ctll::set<'.','0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
-	using set_11 = ctll::set<'!','\"','#','&','\'',',','-','/','0','1','2','3','4','5','6','7','8','9',':','<','=','>','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',']','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
+	using set_13 = ctll::set<'!','\"','#','&','\'',',','-','/','0','1','2','3','4','5','6','7','8','9',':','<','=','>','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',']','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
 	using dot = ctll::term<'.'>;
 	using dolar = ctll::term<'$'>;
 	using quote__close__comma__angle_close__cclose = ctll::set<'\'','\x29',',','>','\x7D'>;
@@ -495,16 +505,30 @@ struct pcre {
 	static constexpr auto rule(backslash_range_x, hexdec) -> ctll::push<create_hexdec, ctll::anything, push_hexdec, hexdec, push_hexdec, finish_hexdec>;
 	static constexpr auto rule(backslash_range_x, copen) -> ctll::push<create_hexdec, ctll::anything, hexdec, push_hexdec, hexdec_push_hexdec_anon, cclose, finish_hexdec>;
 
-	static constexpr auto rule(backslash_range, set_10) -> ctll::push<ctll::anything, push_character>;
+	static constexpr auto rule(backslash_range_c, set_10) -> ctll::push<ctll::anything, make_control_character>;
+
+	static constexpr auto rule(backslash_range, set_11) -> ctll::push<ctll::anything, push_character>;
 	static constexpr auto rule(backslash_range, u) -> ctll::push<ctll::anything, backslash_range_u>;
 	static constexpr auto rule(backslash_range, x) -> ctll::push<ctll::anything, backslash_range_x>;
 	static constexpr auto rule(backslash_range, n) -> ctll::push<ctll::anything, push_character_newline>;
 	static constexpr auto rule(backslash_range, t) -> ctll::push<ctll::anything, push_character_tab>;
 	static constexpr auto rule(backslash_range, r) -> ctll::push<ctll::anything, push_character_return_carriage>;
-	static constexpr auto rule(backslash_range, d0) -> ctll::push<ctll::anything, push_character_null>;
 	static constexpr auto rule(backslash_range, a) -> ctll::push<ctll::anything, push_character_alarm>;
+	static constexpr auto rule(backslash_range, o) -> ctll::push<ctll::anything, create_hexdec, copen, octal, push_octal, octal_push_octal_anon, cclose, finish_hexdec>;
+	static constexpr auto rule(backslash_range, d0) -> ctll::push<ctll::anything, create_hexdec, octal_suffix>;
+	static constexpr auto rule(backslash_range, c) -> ctll::push<ctll::anything, backslash_range_c>;
 	static constexpr auto rule(backslash_range, e) -> ctll::push<ctll::anything, push_character_escape>;
 	static constexpr auto rule(backslash_range, f) -> ctll::push<ctll::anything, push_character_formfeed>;
+
+	static constexpr auto rule(octal_suffix, octal) -> ctll::push<ctll::anything, push_octal, octal_suffix2>;
+	static constexpr auto rule(octal_suffix, set_12) -> ctll::push<finish_hexdec>;
+	static constexpr auto rule(octal_suffix, ctll::epsilon) -> ctll::push<finish_hexdec>;
+	static constexpr auto rule(octal_suffix, _others) -> ctll::push<finish_hexdec>;
+
+	static constexpr auto rule(octal_suffix2, octal) -> ctll::push<ctll::anything, push_octal, finish_hexdec>;
+	static constexpr auto rule(octal_suffix2, set_12) -> ctll::push<finish_hexdec>;
+	static constexpr auto rule(octal_suffix2, ctll::epsilon) -> ctll::push<finish_hexdec>;
+	static constexpr auto rule(octal_suffix2, _others) -> ctll::push<finish_hexdec>;
 
 	static constexpr auto rule(backslash_set, d) -> ctll::push<ctll::anything, class_digit>;
 	static constexpr auto rule(backslash_set, D) -> ctll::push<ctll::anything, class_nondigit>;
@@ -540,6 +564,7 @@ struct pcre {
 	static constexpr auto rule(backslash, b) -> ctll::push<ctll::anything, push_word_boundary>;
 	static constexpr auto rule(backslash, B) -> ctll::push<ctll::anything, push_not_word_boundary>;
 	static constexpr auto rule(backslash, K) -> ctll::push<ctll::anything, push_match_point_reset>;
+	static constexpr auto rule(backslash, X) -> ctll::push<ctll::anything, make_grapheme_cluster>;
 	static constexpr auto rule(backslash, set_6) -> ctll::push<backslash_range>;
 	static constexpr auto rule(backslash, D__H__N__P__S__V__W__d__h__p__s__v__w) -> ctll::push<backslash_set>;
 	static constexpr auto rule(backslash, g) -> ctll::push<ctll::anything, backslash_g>;
@@ -553,7 +578,7 @@ struct pcre {
 
 	static constexpr auto rule(property_value, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_value, set_push_property_value_anon>;
 
-	static constexpr auto rule(character, set_11) -> ctll::push<ctll::anything, push_character>;
+	static constexpr auto rule(character, set_13) -> ctll::push<ctll::anything, push_character>;
 	static constexpr auto rule(character, _others) -> ctll::push<ctll::anything, push_character>;
 	static constexpr auto rule(character, dot) -> ctll::push<ctll::anything, push_character_anything>;
 	static constexpr auto rule(character, backslash_) -> ctll::push<ctll::anything, backslash>;
@@ -575,6 +600,9 @@ struct pcre {
 
 	static constexpr auto rule(hexdec_push_hexdec_anon, hexdec) -> ctll::push<ctll::anything, push_hexdec, hexdec_push_hexdec_anon>;
 	static constexpr auto rule(hexdec_push_hexdec_anon, cclose) -> ctll::epsilon;
+
+	static constexpr auto rule(octal_push_octal_anon, octal) -> ctll::push<ctll::anything, push_octal, octal_push_octal_anon>;
+	static constexpr auto rule(octal_push_octal_anon, cclose) -> ctll::epsilon;
 
 	static constexpr auto rule(set_push_property_value_anon, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_value, set_push_property_value_anon>;
 	static constexpr auto rule(set_push_property_value_anon, cclose) -> ctll::epsilon;

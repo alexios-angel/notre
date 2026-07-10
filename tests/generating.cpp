@@ -244,6 +244,14 @@ static_assert(same_f(CTRE_GEN("(?(?=x)a|b)"), ctre::select<ctre::sequence<ctre::
 // DEFINE keeps its body only for subroutine lookups
 static_assert(same_f(CTRE_GEN("(?(DEFINE)(?<d>x))"), ctre::define_group<ctre::capture_with_name<1,ctre::id<'d'>,ctre::character<'x'>>>()));
 
+// octal and control character escapes produce plain characters
+static_assert(same_f(CTRE_GEN("\\o{101}"), ctre::character<'A'>()));
+static_assert(same_f(CTRE_GEN("\\077"), ctre::character<'?'>()));
+static_assert(same_f(CTRE_GEN("\\0"), ctre::character<'\0'>()));
+static_assert(same_f(CTRE_GEN("\\cA"), ctre::character<'\x01'>()));
+static_assert(same_f(CTRE_GEN("\\cj"), ctre::character<'\x0A'>()));
+static_assert(same_f(CTRE_GEN("\\c?"), ctre::character<'\x7F'>()));
+
 static_assert(same_f(CTRE_GEN("()"), ctre::capture<1,ctre::empty>()));
 static_assert(same_f(CTRE_GEN("(a)(b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::capture<2,ctre::character<'b'>>>()));
 static_assert(same_f(CTRE_GEN("((a)(b))"), ctre::capture<1,ctre::capture<2,ctre::character<'a'>>,ctre::capture<3,ctre::character<'b'>>>()));

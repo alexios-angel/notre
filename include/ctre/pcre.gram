@@ -68,10 +68,11 @@ comment_chars=sigma-{)}
 # Terminal sets: character groups
 # ---------------------------------------------------------------------------
 
-# Backreference shorthands \1..\9 (\0 is the NUL escape, not a reference).
+# Backreference shorthands \1..\9 (\0 starts an octal escape, not a reference).
 escape_backreference={1,2,3,4,5,6,7,8,9}
 
 hexdec={0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,A,B,C,D,E,F}
+octal={0,1,2,3,4,5,6,7}
 
 # Characters that are named terminals somewhere in this grammar but still
 # match as literal characters in ordinary pattern positions.
@@ -264,8 +265,27 @@ backslash_range->x,[create_hexdec],copen,(hexdec,[push_hexdec])+,cclose,[finish_
 backslash_range->n,[push_character_newline]
 backslash_range->t,[push_character_tab]
 backslash_range->r,[push_character_return_carriage]
-backslash_range->0,[push_character_null]
 backslash_range->a,[push_character_alarm]
+
+# Octal code points: \o{ddd..} (any length) and \0, \0d, \0dd; the digit
+# accumulator seed and the number-to-character conversion are shared with
+# the hex escapes. \ddd without the leading zero stays a backreference.
+backslash_range->o,[create_hexdec],copen,(octal,[push_octal])+,cclose,[finish_hexdec]
+backslash_range->0,[create_hexdec],<octal_suffix>
+octal_suffix->octal,[push_octal],<octal_suffix2> | epsilon,[finish_hexdec]
+octal_suffix2->octal,[push_octal],[finish_hexdec] | epsilon,[finish_hexdec]
+
+# Control characters \cX: X is uppercased, then bit 0x40 is flipped,
+# giving \c@ = NUL, \cA..\cZ = 0x01..0x1A, \c[ \c\ \c] \c^ \c_ and
+# \c? = DEL (0x7F).
+backslash_range->c,[[a-zA-Z]],[make_control_character]
+backslash_range->c,\@,[make_control_character]
+backslash_range->c,sopen,[make_control_character]
+backslash_range->c,backslash,[make_control_character]
+backslash_range->c,sclose,[make_control_character]
+backslash_range->c,caret,[make_control_character]
+backslash_range->c,_,[make_control_character]
+backslash_range->c,questionmark,[make_control_character]
 backslash_range->e,[push_character_escape]
 backslash_range->f,[push_character_formfeed]
 backslash_range->minus,[push_character]
@@ -294,6 +314,10 @@ backslash->B,[push_not_word_boundary]
 
 # Match point reset: the reported match (capture 0) starts where \K matched.
 backslash->K,[push_match_point_reset]
+
+# Extended grapheme cluster \X, approximated as the atomic \P{M}\p{M}*
+# (a non-mark followed by all its combining marks). Not valid in a class.
+backslash->X,[make_grapheme_cluster]
 
 # Property names and values share one alphabet (letters, digits, _ and .).
 property_name->[[a-zA-Z0-9_.]],[push_property_name],<property_name2>

@@ -255,4 +255,29 @@ static_assert(!CTRE_SYNTAX("(?(DEFINE)a|b)")); // DEFINE cannot have an alternat
 static_assert(CTRE_SYNTAX("(a)(?(1)b|c)"));
 static_assert(CTRE_SYNTAX("(a)(?(+1)x)(b)"));
 
+// octal escapes
+static_assert(CTRE_TEST("\\o{101}"));
+static_assert(CTRE_TEST("\\0"));
+static_assert(CTRE_TEST("\\07"));
+static_assert(CTRE_TEST("\\077"));
+static_assert(CTRE_TEST("[\\o{40}-\\o{176}]"));
+static_assert(!CTRE_TEST("\\o{}")); // empty
+static_assert(!CTRE_TEST("\\o{18}")); // 8 is not an octal digit
+static_assert(!CTRE_TEST("\\o101")); // braces are required
+
+// control characters
+static_assert(CTRE_TEST("\\cA"));
+static_assert(CTRE_TEST("\\cz"));
+static_assert(CTRE_TEST("\\c["));
+static_assert(CTRE_TEST("\\c\\"));
+static_assert(CTRE_TEST("\\c?"));
+static_assert(CTRE_TEST("[\\cA-\\cZ]"));
+static_assert(!CTRE_TEST("\\c")); // needs a following character
+static_assert(!CTRE_TEST("\\c5")); // digits are not control names
+
+// grapheme cluster
+static_assert(CTRE_TEST("\\X"));
+static_assert(CTRE_TEST("\\X+"));
+static_assert(!CTRE_TEST("[\\X]")); // not valid inside a class
+
 
