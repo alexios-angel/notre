@@ -103,6 +103,7 @@ if(CTRE_MODULE)
 			include/ctll/actions.hpp
 			include/ctll/fixed_string.hpp
 			include/ctll/function.hpp
+			include/ctll/map.hpp
 			include/ctll/list.hpp
 			include/ctll/utilities.hpp
 			include/ctll/grammars.hpp
