@@ -72,6 +72,17 @@ template <typename Name> static auto rotate(back_reference_with_name<Name>) -> b
 template <size_t Index> static auto rotate(subroutine_call<Index>) -> subroutine_call<Index>;
 template <typename Name> static auto rotate(subroutine_call_with_name<Name>) -> subroutine_call_with_name<Name>;
 
+// conditional branches rotate (bodies, not trailing return types, so the
+// recursive rotate calls see members declared later in this class);
+// a DEFINE body is never evaluated
+template <size_t Index, typename Yes, typename No> static auto rotate(condition_capture<Index, Yes, No>) {
+	return condition_capture<Index, decltype(rotate(Yes{})), decltype(rotate(No{}))>{};
+}
+template <typename Name, typename Yes, typename No> static auto rotate(condition_capture_with_name<Name, Yes, No>) {
+	return condition_capture_with_name<Name, decltype(rotate(Yes{})), decltype(rotate(No{}))>{};
+}
+template <typename... Content> static auto rotate(define_group<Content...>) -> define_group<Content...>;
+
 template <typename... Content> static auto rotate(look_start<Content...>) -> look_start<Content...>;
 
 template <auto... Str> static auto rotate(string<Str...>) -> decltype((string<>{} + ... + rotate_value<Str>{}));

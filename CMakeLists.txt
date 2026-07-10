@@ -71,6 +71,7 @@ if(CTRE_MODULE)
 			include/ctre/actions/mode.inc.hpp
 			include/ctre/actions/characters.inc.hpp
 			include/ctre/actions/class.inc.hpp
+			include/ctre/actions/conditional.inc.hpp
 			include/ctre/actions/look.inc.hpp
 			include/ctre/actions/sequence.inc.hpp
 			include/ctre/actions/fusion.inc.hpp

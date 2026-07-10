@@ -57,6 +57,23 @@ constexpr auto first(ctll::list<Content...> l, ctll::list<match_point_reset, Tai
 	return first(l, ctll::list<Tail...>{});
 }
 
+// conditional: either branch may begin the match
+template <typename... Content, size_t Id, typename Yes, typename No, typename... Tail>
+constexpr auto first(ctll::list<Content...> l, ctll::list<condition_capture<Id, Yes, No>, Tail...>) noexcept {
+	return first(first(l, ctll::list<Yes, Tail...>{}), ctll::list<No, Tail...>{});
+}
+
+template <typename... Content, typename Name, typename Yes, typename No, typename... Tail>
+constexpr auto first(ctll::list<Content...> l, ctll::list<condition_capture_with_name<Name, Yes, No>, Tail...>) noexcept {
+	return first(first(l, ctll::list<Yes, Tail...>{}), ctll::list<No, Tail...>{});
+}
+
+// a DEFINE group is never evaluated: look through it
+template <typename... Content, typename... Def, typename... Tail>
+constexpr auto first(ctll::list<Content...> l, ctll::list<define_group<Def...>, Tail...>) noexcept {
+	return first(l, ctll::list<Tail...>{});
+}
+
 // asserts
 template <typename... Content, typename... Tail> 
 constexpr auto first(ctll::list<Content...> l, ctll::list<assert_subject_begin, Tail...>) noexcept {

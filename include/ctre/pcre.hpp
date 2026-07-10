@@ -44,6 +44,12 @@ struct pcre {
 	struct class_named_sopen_colon {};
 	struct comment_body {};
 	struct comment_chars_anon {};
+	struct condition {};
+	struct condition_branch {};
+	struct condition_branches {};
+	struct condition_branches_end {};
+	struct condition_questionmark {};
+	struct condition_questionmark_angle_open {};
 	struct content {};
 	struct content2 {};
 	struct content2_pipe {};
@@ -114,6 +120,11 @@ struct pcre {
 	struct make_capture: ctll::action {};
 	struct make_capture_with_name: ctll::action {};
 	struct make_comment: ctll::action {};
+	struct make_condition_capture_ref: ctll::action {};
+	struct make_condition_capture_ref_ahead: ctll::action {};
+	struct make_condition_capture_ref_behind: ctll::action {};
+	struct make_conditional_one: ctll::action {};
+	struct make_conditional_two: ctll::action {};
 	struct make_lazy: ctll::action {};
 	struct make_optional: ctll::action {};
 	struct make_possessive: ctll::action {};
@@ -365,6 +376,7 @@ struct pcre {
 	static constexpr auto rule(block_questionmark, minus) -> ctll::push<ctll::anything, number, make_subroutine_call_behind, close>;
 	static constexpr auto rule(block_questionmark, plus) -> ctll::push<ctll::anything, number, make_subroutine_call_ahead, close>;
 	static constexpr auto rule(block_questionmark, ampersand) -> ctll::push<ctll::anything, block_name, make_subroutine_call_with_name, close>;
+	static constexpr auto rule(block_questionmark, open) -> ctll::push<ctll::anything, reset_capture, condition>;
 
 	static constexpr auto rule(block, set_3) -> ctll::push<content_in_capture, make_capture, close>;
 	static constexpr auto rule(block, _others) -> ctll::push<content_in_capture, make_capture, close>;
@@ -372,6 +384,31 @@ struct pcre {
 
 	static constexpr auto rule(comment_body, close) -> ctll::push<comment_chars_anon, close, make_comment>;
 	static constexpr auto rule(comment_body, comment_chars) -> ctll::push<comment_chars_anon, close, make_comment>;
+
+	static constexpr auto rule(condition_questionmark_angle_open, equal_sign) -> ctll::push<ctll::anything, start_lookbehind_positive, content_in_capture, look_finish, close, condition_branches>;
+	static constexpr auto rule(condition_questionmark_angle_open, exclamation_mark) -> ctll::push<ctll::anything, start_lookbehind_negative, content_in_capture, look_finish, close, condition_branches>;
+
+	static constexpr auto rule(condition_questionmark, equal_sign) -> ctll::push<ctll::anything, start_lookahead_positive, content_in_capture, look_finish, close, condition_branches>;
+	static constexpr auto rule(condition_questionmark, exclamation_mark) -> ctll::push<ctll::anything, start_lookahead_negative, content_in_capture, look_finish, close, condition_branches>;
+	static constexpr auto rule(condition_questionmark, angle_open) -> ctll::push<ctll::anything, condition_questionmark_angle_open>;
+
+	static constexpr auto rule(condition, num) -> ctll::push<number, make_condition_capture_ref, close, condition_branches>;
+	static constexpr auto rule(condition, minus) -> ctll::push<ctll::anything, number, make_condition_capture_ref_behind, close, condition_branches>;
+	static constexpr auto rule(condition, plus) -> ctll::push<ctll::anything, number, make_condition_capture_ref_ahead, close, condition_branches>;
+	static constexpr auto rule(condition, angle_open) -> ctll::push<ctll::anything, block_name, angle_close, close, condition_branches>;
+	static constexpr auto rule(condition, apostrophe) -> ctll::push<ctll::anything, block_name, apostrophe, close, condition_branches>;
+	static constexpr auto rule(condition, alpha_characters) -> ctll::push<block_name, close, condition_branches>;
+	static constexpr auto rule(condition, questionmark) -> ctll::push<ctll::anything, condition_questionmark>;
+
+	static constexpr auto rule(condition_branches, set_3) -> ctll::push<condition_branch, condition_branches_end>;
+	static constexpr auto rule(condition_branches, _others) -> ctll::push<condition_branch, condition_branches_end>;
+
+	static constexpr auto rule(condition_branch, set_1) -> ctll::push<string_in_capture>;
+	static constexpr auto rule(condition_branch, _others) -> ctll::push<string_in_capture>;
+	static constexpr auto rule(condition_branch, close__pipe) -> ctll::push<push_empty>;
+
+	static constexpr auto rule(condition_branches_end, close) -> ctll::push<ctll::anything, make_conditional_one>;
+	static constexpr auto rule(condition_branches_end, pipe) -> ctll::push<ctll::anything, condition_branch, close, make_conditional_two>;
 
 	static constexpr auto rule(block_name, alpha_characters) -> ctll::push<ctll::anything, push_name, alphanum_characters_push_name_anon>;
 

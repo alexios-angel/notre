@@ -54,6 +54,15 @@ template <typename Name> struct back_reference_with_name { };
 template <size_t Index> struct subroutine_call { };
 template <typename Name> struct subroutine_call_with_name { };
 
+// conditional pattern (?(condition)yes|no): the branch is picked by whether
+// the referenced capture group has participated in the match so far
+template <size_t Index, typename Yes, typename No> struct condition_capture { };
+template <typename Name, typename Yes, typename No> struct condition_capture_with_name { };
+
+// (?(DEFINE)...): never evaluated; the content only defines groups to be
+// used by subroutine calls
+template <typename... Content> struct define_group { };
+
 template <typename Type> struct look_start { };
 
 template <typename... Content> struct lookahead_positive { };

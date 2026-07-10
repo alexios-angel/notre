@@ -235,6 +235,15 @@ static_assert(same_f(CTRE_GEN("\\g'2'"), ctre::subroutine_call<2>()));
 // match point reset \K is an ordinary zero-width atom in the AST
 static_assert(same_f(CTRE_GEN("a\\Kb"), ctre::sequence<ctre::character<'a'>,ctre::match_point_reset,ctre::character<'b'>>()));
 
+// conditional patterns
+static_assert(same_f(CTRE_GEN("(a)(?(1)b|c)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::condition_capture<1,ctre::character<'b'>,ctre::character<'c'>>>()));
+static_assert(same_f(CTRE_GEN("(a)(?(1)b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::condition_capture<1,ctre::character<'b'>,ctre::empty>>()));
+static_assert(same_f(CTRE_GEN("(?<w>a)(?(w)b|c)"), ctre::sequence<ctre::capture_with_name<1,ctre::id<'w'>,ctre::character<'a'>>,ctre::condition_capture_with_name<ctre::id<'w'>,ctre::character<'b'>,ctre::character<'c'>>>()));
+// an assertion condition is rewritten into a guarded alternation
+static_assert(same_f(CTRE_GEN("(?(?=x)a|b)"), ctre::select<ctre::sequence<ctre::lookahead_positive<ctre::character<'x'>>,ctre::character<'a'>>,ctre::sequence<ctre::lookahead_negative<ctre::character<'x'>>,ctre::character<'b'>>>()));
+// DEFINE keeps its body only for subroutine lookups
+static_assert(same_f(CTRE_GEN("(?(DEFINE)(?<d>x))"), ctre::define_group<ctre::capture_with_name<1,ctre::id<'d'>,ctre::character<'x'>>>()));
+
 static_assert(same_f(CTRE_GEN("()"), ctre::capture<1,ctre::empty>()));
 static_assert(same_f(CTRE_GEN("(a)(b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::capture<2,ctre::character<'b'>>>()));
 static_assert(same_f(CTRE_GEN("((a)(b))"), ctre::capture<1,ctre::capture<2,ctre::character<'a'>>,ctre::capture<3,ctre::character<'b'>>>()));

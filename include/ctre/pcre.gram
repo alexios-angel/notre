@@ -173,6 +173,29 @@ block->questionmark,plus,<number>,[make_subroutine_call_ahead],close
 block->questionmark,ampersand,<block_name>,[make_subroutine_call_with_name],close
 block->questionmark,P,angle_close,<block_name>,[make_subroutine_call_with_name],close
 
+# Conditional patterns: (?(condition)yes|no). The condition is a group
+# reference (number, relative number or name - bare, <angle> or 'quoted'),
+# an assertion (lookaround), or DEFINE, whose body is never executed and
+# only defines groups for subroutine calls. At most two branches, and a
+# branch cannot contain a top-level alternation (group it instead).
+block->questionmark,open,[reset_capture],<condition>
+
+condition-><number>,[make_condition_capture_ref],close,<condition_branches>
+condition->minus,<number>,[make_condition_capture_ref_behind],close,<condition_branches>
+condition->plus,<number>,[make_condition_capture_ref_ahead],close,<condition_branches>
+condition->angle_open,<block_name>,angle_close,close,<condition_branches>
+condition->apostrophe,<block_name>,apostrophe,close,<condition_branches>
+condition-><block_name>,close,<condition_branches>
+condition->questionmark,equal_sign,[start_lookahead_positive],<content_in_capture>,[look_finish],close,<condition_branches>
+condition->questionmark,exclamation_mark,[start_lookahead_negative],<content_in_capture>,[look_finish],close,<condition_branches>
+condition->questionmark,angle_open,equal_sign,[start_lookbehind_positive],<content_in_capture>,[look_finish],close,<condition_branches>
+condition->questionmark,angle_open,exclamation_mark,[start_lookbehind_negative],<content_in_capture>,[look_finish],close,<condition_branches>
+
+condition_branches-><condition_branch>,<condition_branches_end>
+condition_branch-><string_in_capture> | epsilon,[push_empty]
+condition_branches_end->close,[make_conditional_one]
+condition_branches_end->pipe,<condition_branch>,close,[make_conditional_two]
+
 block_name->alpha_characters,[push_name],(alphanum_characters,[push_name])*
 
 # Inline modes: one or more of i c s m, then ) - e.g. (?i), (?im).

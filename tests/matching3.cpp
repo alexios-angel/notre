@@ -330,4 +330,38 @@ static_assert(ctre::search<"[0-9]+\\K[a-z]+">("123abc"sv).to_view() == "abc"sv);
 static_assert(ctre::match<"abc\\K">("abc"sv).to_view().empty());
 #endif
 
+// conditional patterns (?(condition)yes|no)
+TEST_MATCH(291, "(a)?(?(1)b|c)", "ab");
+TEST_MATCH(292, "(a)?(?(1)b|c)", "c");
+TEST_NOT_MATCH(293, "(a)?(?(1)b|c)", "b"); // group unset, no-branch required
+TEST_NOT_MATCH(294, "(a)?(?(1)b|c)", "ac"); // backtracked (a)? leaves cond false
+TEST_MATCH(295, "(a)?(?(1)b)", ""); // one branch, false condition matches empty
+TEST_MATCH(296, "(a)?(?(-1)b|c)", "ab"); // relative condition
+TEST_MATCH(297, "(?<w>a)?(?(<w>)b|c)", "ab"); // named, angle form
+TEST_MATCH(298, "(?<w>a)?(?('w')b|c)", "c"); // named, quote form
+TEST_MATCH(299, "(?<w>a)?(?(w)b|c)", "ab"); // named, bare form
+TEST_MATCH(300, "(?(?=ab)a.|b.)", "ab"); // assertion condition
+TEST_MATCH(301, "(?(?=ab)a.|b.)", "bx");
+TEST_MATCH(302, "(?(?!ab)b.|a.)", "ab");
+TEST_MATCH(303, "a(?(?<=a)b|c)", "ab"); // lookbehind condition
+TEST_MATCH(304, "x(?(?<=a)b|c)", "xc");
+TEST_MATCH(305, "(?(DEFINE)(?<digit>[0-9]))(?&digit)+", "123"); // define and call
+TEST_NOT_MATCH(306, "(?(DEFINE)(?<digit>[0-9]))(?&digit)+", "12a");
+TEST_MATCH(307, "(?(DEFINE)(?<d>x))y", "y"); // DEFINE body never executes
+TEST_MATCH(308, "(?(DEFINE)(?<d>[0-9])(?<pair>(?&d)(?&d)))(?&pair)-(?&pair)", "12-34");
+TEST_MATCH(309, "(a)?bx(?<=(?(1)bx|q))", "abx"); // conditional inside lookbehind
+TEST_MATCH(310, "(a)(?(1)b)+c", "abbbc"); // quantified conditional
+TEST_MATCH(311, "(\")?(?(1)[^\"]*\"|[a-z]+)", "\"hi there\""); // quoted-or-bare idiom
+TEST_MATCH(312, "(\")?(?(1)[^\"]*\"|[a-z]+)", "hi");
+TEST_NOT_MATCH(313, "(\")?(?(1)[^\"]*\"|[a-z]+)", "\"unterminated");
+
+#if CTRE_CNTTP_COMPILER_CHECK
+// captures inside conditional branches are real
+static_assert(ctre::match<"(a)?(?(1)(x)|(y))">("ax"sv).get<2>() == "x"sv);
+static_assert(ctre::match<"(a)?(?(1)(x)|(y))">("y"sv).get<3>() == "y"sv);
+// a conditional inlined by a subroutine call still reads the original group
+static_assert(ctre::match<"(a)?((?(1)x|y))z(?2)">("axzx"sv));
+static_assert(ctre::match<"(a)?((?(1)x|y))z(?2)">("yzy"sv));
+#endif
+
 

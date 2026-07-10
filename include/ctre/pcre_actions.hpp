@@ -32,6 +32,9 @@ template <typename... Content, typename Parameters> pcre_context(ctll::list<Cont
 template <size_t Value> struct number { };
 
 template <size_t Id> struct capture_id { };
+
+// parse-time marker for the condition of (?(N)...) while its branches parse
+template <size_t Id> struct condition_ref { };
 	
 struct pcre_actions {
 // i know it's ugly, but it's more readable
@@ -43,6 +46,7 @@ struct pcre_actions {
 #include "actions/characters.inc.hpp"
 #include "actions/class.inc.hpp"
 #include "actions/comment.inc.hpp"
+#include "actions/conditional.inc.hpp"
 #include "actions/fusion.inc.hpp"
 #include "actions/hexdec.inc.hpp"
 #include "actions/look.inc.hpp"

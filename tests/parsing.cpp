@@ -228,4 +228,31 @@ static_assert(CTRE_TEST("a\\Kb"));
 static_assert(CTRE_TEST("\\K"));
 static_assert(!CTRE_TEST("[\\K]")); // not an escape inside a class
 
+// conditional patterns
+static_assert(CTRE_TEST("(?(1)a|b)"));
+static_assert(CTRE_TEST("(?(1)a)"));
+static_assert(CTRE_TEST("(?(1)|b)"));
+static_assert(CTRE_TEST("(?(-1)a|b)"));
+static_assert(CTRE_TEST("(?(+1)a|b)"));
+static_assert(CTRE_TEST("(?(<name>)a|b)"));
+static_assert(CTRE_TEST("(?('name')a|b)"));
+static_assert(CTRE_TEST("(?(name)a|b)"));
+static_assert(CTRE_TEST("(?(?=x)a|b)"));
+static_assert(CTRE_TEST("(?(?!x)a|b)"));
+static_assert(CTRE_TEST("(?(?<=x)a|b)"));
+static_assert(CTRE_TEST("(?(?<!x)a|b)"));
+static_assert(CTRE_TEST("(?(DEFINE)(?<d>x))"));
+static_assert(!CTRE_TEST("(?()a)")); // empty condition
+static_assert(!CTRE_TEST("(?(1)a|b|c)")); // more than two branches
+static_assert(!CTRE_TEST("(?(1)a|b")); // unterminated
+
+// conditional action-level rejects
+static_assert(!CTRE_SYNTAX("(?(0)a)")); // no group zero
+static_assert(!CTRE_SYNTAX("(?(2)a)")); // group must already exist
+static_assert(!CTRE_SYNTAX("(?(-1)a)")); // nothing behind
+static_assert(!CTRE_SYNTAX("(?(R)a|b)")); // recursion condition unsupported
+static_assert(!CTRE_SYNTAX("(?(DEFINE)a|b)")); // DEFINE cannot have an alternative
+static_assert(CTRE_SYNTAX("(a)(?(1)b|c)"));
+static_assert(CTRE_SYNTAX("(a)(?(+1)x)(b)"));
+
 

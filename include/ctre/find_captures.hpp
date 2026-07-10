@@ -111,6 +111,21 @@ CTRE_EXPORT template <typename... Content, typename... Tail, typename Output> co
 
 
 
+// captures in either conditional branch are real; a DEFINE body is never
+// evaluated, so its groups get no result slot (they can only be reached
+// through subroutine calls, which do not capture)
+CTRE_EXPORT template <size_t Id, typename Yes, typename No, typename... Tail, typename Output> constexpr auto find_captures(ctll::list<condition_capture<Id, Yes, No>, Tail...>, Output output) noexcept {
+	return find_captures(ctll::list<Yes, No, Tail...>(), output);
+}
+
+CTRE_EXPORT template <typename Name, typename Yes, typename No, typename... Tail, typename Output> constexpr auto find_captures(ctll::list<condition_capture_with_name<Name, Yes, No>, Tail...>, Output output) noexcept {
+	return find_captures(ctll::list<Yes, No, Tail...>(), output);
+}
+
+CTRE_EXPORT template <typename... Content, typename... Tail, typename Output> constexpr auto find_captures(ctll::list<define_group<Content...>, Tail...>, Output output) noexcept {
+	return find_captures(ctll::list<Tail...>(), output);
+}
+
 CTRE_EXPORT template <size_t Id, typename... Content, typename... Tail, typename... Output> constexpr auto find_captures(ctll::list<capture<Id,Content...>, Tail...>, ctll::list<Output...>) noexcept {
 	return find_captures(ctll::list<Content..., Tail...>(), ctll::list<Output..., captured_content<Id>>());
 }

@@ -51,6 +51,7 @@ What the library can do:
 * Back-references (`\g{N}` syntax, and `\1`...`\9` too)
 * Subroutine calls — `(?N)`, relative `(?+N)`/`(?-N)`, `(?&name)`, `(?P>name)`, `\g<name>`, `\g'name'` — inlined at compile time as atomic, non-capturing copies of the called group (recursive calls are a compile error)
 * Match point reset (`\K`) — the part before it must match but is excluded from the reported match (not allowed inside lookarounds, as in PCRE2)
+* Conditional patterns — `(?(1)yes|no)`, relative `(?(-1)`/`(?(+1)`, named `(?(<name>)`/`(?('name')`/`(?(name)`, assertion conditions `(?(?=...)yes|no)`, and `(?(DEFINE)...)` for building reusable subpattern libraries with subroutine calls
 * Lookahead `(?=...)` / `(?!...)` and lookbehind `(?<=...)` / `(?<!...)`
 * Atomic groups `(?>...)` and possessive quantifiers (`a++`, `a*+`, ...)
 * Lazy and greedy quantifiers
@@ -63,7 +64,6 @@ What the library can do:
 The library implements most of the PCRE syntax with a few exceptions:
 
 * callouts
-* conditional patterns
 * control characters (`\cX`)
 * named characters
 * octal numbers

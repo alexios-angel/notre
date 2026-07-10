@@ -80,6 +80,32 @@ constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator curre
 	return evaluate(begin, current, last, f, captures.set_start_mark(current), ctll::list<Tail...>());
 }
 
+// conditional pattern (?(N)yes|no): pick the branch by whether the group
+// has participated in the match so far; no backtracking into the other branch
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, size_t Id, typename Yes, typename No, typename... Tail>
+constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<condition_capture<Id, Yes, No>, Tail...>) noexcept {
+	if (captures.template get<Id>()) {
+		return evaluate(begin, current, last, f, captures, ctll::list<Yes, Tail...>());
+	} else {
+		return evaluate(begin, current, last, f, captures, ctll::list<No, Tail...>());
+	}
+}
+
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename Name, typename Yes, typename No, typename... Tail>
+constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<condition_capture_with_name<Name, Yes, No>, Tail...>) noexcept {
+	if (captures.template get<Name>()) {
+		return evaluate(begin, current, last, f, captures, ctll::list<Yes, Tail...>());
+	} else {
+		return evaluate(begin, current, last, f, captures, ctll::list<No, Tail...>());
+	}
+}
+
+// (?(DEFINE)...) is never evaluated
+template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename... Content, typename... Tail>
+constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator begin, Iterator current, const EndIterator last, const flags & f, R captures, ctll::list<define_group<Content...>, Tail...>) noexcept {
+	return evaluate(begin, current, last, f, captures, ctll::list<Tail...>());
+}
+
 // mark end of cycle
 template <typename R, typename BeginIterator, typename Iterator, typename EndIterator, typename... Tail> 
 constexpr CTRE_FORCE_INLINE R evaluate(const BeginIterator, Iterator current, const EndIterator, [[maybe_unused]] const flags & f, R captures, ctll::list<end_cycle_mark>) noexcept {

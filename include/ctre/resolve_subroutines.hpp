@@ -100,6 +100,18 @@ template <typename... Content, typename... Tail> constexpr bool contains_match_p
 	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
 }
 
+template <size_t Id, typename Yes, typename No, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<condition_capture<Id, Yes, No>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Yes, No, Tail...>{});
+}
+
+template <typename Name, typename Yes, typename No, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<condition_capture_with_name<Name, Yes, No>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Yes, No, Tail...>{});
+}
+
+template <typename... Content, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<define_group<Content...>, Tail...>) noexcept {
+	return contains_match_point_reset(ctll::list<Content..., Tail...>{});
+}
+
 template <typename Head, typename... Tail> constexpr bool contains_match_point_reset(ctll::list<Head, Tail...>) noexcept {
 	return contains_match_point_reset(ctll::list<Tail...>{});
 }
@@ -166,6 +178,19 @@ template <size_t Id, typename... Content, typename... Tail> constexpr auto subro
 	return subroutine_target_by_id<Id>(ctll::list<Content..., Tail...>{});
 }
 
+template <size_t Id, size_t Id2, typename Yes, typename No, typename... Tail> constexpr auto subroutine_target_by_id(ctll::list<condition_capture<Id2, Yes, No>, Tail...>) noexcept {
+	return subroutine_target_by_id<Id>(ctll::list<Yes, No, Tail...>{});
+}
+
+template <size_t Id, typename Name, typename Yes, typename No, typename... Tail> constexpr auto subroutine_target_by_id(ctll::list<condition_capture_with_name<Name, Yes, No>, Tail...>) noexcept {
+	return subroutine_target_by_id<Id>(ctll::list<Yes, No, Tail...>{});
+}
+
+// groups inside (?(DEFINE)...) exist to be called
+template <size_t Id, typename... Content, typename... Tail> constexpr auto subroutine_target_by_id(ctll::list<define_group<Content...>, Tail...>) noexcept {
+	return subroutine_target_by_id<Id>(ctll::list<Content..., Tail...>{});
+}
+
 template <size_t Id, typename Head, typename... Tail> constexpr auto subroutine_target_by_id(ctll::list<Head, Tail...>) noexcept {
 	return subroutine_target_by_id<Id>(ctll::list<Tail...>{});
 }
@@ -228,6 +253,19 @@ template <typename Name, typename... Content, typename... Tail> constexpr auto s
 	return subroutine_target_by_name<Name>(ctll::list<Content..., Tail...>{});
 }
 
+template <typename Name, size_t Id2, typename Yes, typename No, typename... Tail> constexpr auto subroutine_target_by_name(ctll::list<condition_capture<Id2, Yes, No>, Tail...>) noexcept {
+	return subroutine_target_by_name<Name>(ctll::list<Yes, No, Tail...>{});
+}
+
+template <typename Name, typename Name2, typename Yes, typename No, typename... Tail> constexpr auto subroutine_target_by_name(ctll::list<condition_capture_with_name<Name2, Yes, No>, Tail...>) noexcept {
+	return subroutine_target_by_name<Name>(ctll::list<Yes, No, Tail...>{});
+}
+
+// groups inside (?(DEFINE)...) exist to be called
+template <typename Name, typename... Content, typename... Tail> constexpr auto subroutine_target_by_name(ctll::list<define_group<Content...>, Tail...>) noexcept {
+	return subroutine_target_by_name<Name>(ctll::list<Content..., Tail...>{});
+}
+
 template <typename Name, typename Head, typename... Tail> constexpr auto subroutine_target_by_name(ctll::list<Head, Tail...>) noexcept {
 	return subroutine_target_by_name<Name>(ctll::list<Tail...>{});
 }
@@ -284,6 +322,16 @@ template <size_t Id, typename... Content> constexpr auto strip_captures(capture<
 
 template <size_t Id, typename Name, typename... Content> constexpr auto strip_captures(capture_with_name<Id, Name, Content...>) noexcept {
 	return sequence<decltype(strip_captures(Content{}))...>{};
+}
+
+// conditional branches lose their captures too; the condition reference
+// itself stays (it reads the original group's state at the call site)
+template <size_t Id, typename Yes, typename No> constexpr auto strip_captures(condition_capture<Id, Yes, No>) noexcept {
+	return condition_capture<Id, decltype(strip_captures(Yes{})), decltype(strip_captures(No{}))>{};
+}
+
+template <typename Name, typename Yes, typename No> constexpr auto strip_captures(condition_capture_with_name<Name, Yes, No>) noexcept {
+	return condition_capture_with_name<Name, decltype(strip_captures(Yes{})), decltype(strip_captures(No{}))>{};
 }
 
 // --- the resolver itself
@@ -389,6 +437,19 @@ template <typename Whole> struct subroutine_resolver {
 
 	template <subroutine_mode Mode, typename Visited, size_t Id, typename Name, typename... Content> static constexpr auto resolve(Visited v, capture_with_name<Id, Name, Content...>) noexcept {
 		return capture_with_name<Id, Name, decltype(resolve<Mode>(v, Content{}))...>{};
+	}
+
+	template <subroutine_mode Mode, typename Visited, size_t Id, typename Yes, typename No> static constexpr auto resolve(Visited v, condition_capture<Id, Yes, No>) noexcept {
+		return condition_capture<Id, decltype(resolve<Mode>(v, Yes{})), decltype(resolve<Mode>(v, No{}))>{};
+	}
+
+	template <subroutine_mode Mode, typename Visited, typename Name, typename Yes, typename No> static constexpr auto resolve(Visited v, condition_capture_with_name<Name, Yes, No>) noexcept {
+		return condition_capture_with_name<Name, decltype(resolve<Mode>(v, Yes{})), decltype(resolve<Mode>(v, No{}))>{};
+	}
+
+	// DEFINE bodies may themselves contain subroutine calls
+	template <subroutine_mode Mode, typename Visited, typename... Content> static constexpr auto resolve(Visited v, define_group<Content...>) noexcept {
+		return define_group<decltype(resolve<Mode>(v, Content{}))...>{};
 	}
 
 	template <typename... Content> static constexpr bool lookaround_content_is_valid() noexcept {
