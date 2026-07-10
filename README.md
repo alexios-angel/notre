@@ -49,6 +49,7 @@ What the library can do:
 * Iterating over all matches (`search_all`), splitting (`split`), tokenizing (`tokenize`)
 * Capturing content, including named captures — `(?<name>...)`, `(?P<name>...)`, and `(?'name'...)` syntaxes
 * Back-references (`\g{N}` syntax, and `\1`...`\9` too)
+* Subroutine calls — `(?N)`, relative `(?+N)`/`(?-N)`, `(?&name)`, `(?P>name)`, `\g<name>`, `\g'name'` — inlined at compile time as atomic, non-capturing copies of the called group (recursive calls are a compile error)
 * Lookahead `(?=...)` / `(?!...)` and lookbehind `(?<=...)` / `(?<!...)`
 * Atomic groups `(?>...)` and possessive quantifiers (`a++`, `a*+`, ...)
 * Lazy and greedy quantifiers
@@ -67,7 +68,7 @@ The library implements most of the PCRE syntax with a few exceptions:
 * named characters
 * octal numbers
 * options / modes — except the inline mode switches `(?i)`, `(?c)`, `(?s)`, `(?m)` (and combinations like `(?im)`), which are supported
-* subroutines
+* recursion — `(?R)`, `(?0)`, and recursive subroutine calls (non-recursive calls are supported and expanded at compile time; unbounded recursion cannot be)
 * unicode grapheme cluster (`\X`)
 
 More documentation on the PCRE syntax at [pcre.org](https://www.pcre.org/current/doc/html/pcre2syntax.html).

@@ -67,7 +67,7 @@ template <ctll::fixed_string input> CTRE_FLATTEN constexpr CTRE_FORCE_INLINE aut
 	using tmp = typename ctll::parser<ctre::pcre, _input, ctre::pcre_actions>::template output<pcre_context<>>;
 	static_assert(tmp(), "Regular Expression contains syntax error.");
 	if constexpr (tmp()) {
-		using re = decltype(front(typename tmp::output_type::stack_type()));
+		using re = decltype(ctre::resolve_subroutines(front(typename tmp::output_type::stack_type())));
 		return ctre::regular_expression(re());
 	} else {
 		return ctre::regular_expression(reject());

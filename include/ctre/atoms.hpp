@@ -49,6 +49,11 @@ template <size_t Index, typename Name, typename... Content> struct capture_with_
 template <size_t Index> struct back_reference { };
 template <typename Name> struct back_reference_with_name { };
 
+// subroutine calls (?N) / (?&name); replaced by an inlined atomic copy of
+// the referenced group before the expression is used (resolve_subroutines.hpp)
+template <size_t Index> struct subroutine_call { };
+template <typename Name> struct subroutine_call_with_name { };
+
 template <typename Type> struct look_start { };
 
 template <typename... Content> struct lookahead_positive { };

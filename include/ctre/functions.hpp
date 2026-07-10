@@ -6,6 +6,7 @@
 #include "evaluation.hpp"
 #include "wrapper.hpp"
 #include "id.hpp"
+#include "resolve_subroutines.hpp"
 
 namespace ctre {
 
@@ -39,7 +40,7 @@ constexpr auto & _input = input;
 	
 	using tmp = typename ctll::parser<ctre::pcre, _input, ctre::pcre_actions>::template output<pcre_context<>>;
 	static_assert(tmp(), "Regular Expression contains syntax error.");
-	using regex = decltype(front(typename tmp::output_type::stack_type()));
+	using regex = decltype(ctre::resolve_subroutines(front(typename tmp::output_type::stack_type())));
 	return ctre::regular_expression<regex, Modifier, singleline>();
 }
 

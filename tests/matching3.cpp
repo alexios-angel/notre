@@ -277,4 +277,37 @@ TEST_MATCH(258, "don't", "don't");
 TEST_MATCH(259, "P+", "PPP"); // P is still an ordinary literal
 TEST_MATCH(260, "(?<P>P)", "P");
 
+// subroutine calls: the referenced group's pattern is matched again
+TEST_MATCH(261, "(a)(?1)", "aa");
+TEST_NOT_MATCH(262, "(a)(?1)", "ab");
+TEST_MATCH(263, "([ab]c)(?1)", "acbc");
+TEST_MATCH(264, "(?2)(x)(b)", "bxb"); // forward reference
+TEST_MATCH(265, "(a)(b)(?-1)", "abb"); // relative behind
+TEST_MATCH(266, "(a)(b)(?-2)", "aba");
+TEST_MATCH(267, "(?+1)(q)", "qq"); // relative ahead
+TEST_MATCH(268, "(?<w>ab)(?&w)", "abab");
+TEST_MATCH(269, "(?P<w>ab)(?P>w)", "abab");
+TEST_MATCH(270, "(?<w>ab)\\g<w>", "abab");
+TEST_MATCH(271, "(?'w'ab)\\g'w'", "abab");
+TEST_MATCH(272, "(ab)\\g<1>", "abab");
+TEST_MATCH(273, "(ab)\\g'1'", "abab");
+TEST_MATCH(274, "(a|ab)z(?1)c", "azac");
+TEST_NOT_MATCH(275, "(a|ab)z(?1)c", "azabc"); // calls are atomic, like PCRE
+TEST_MATCH(276, "(ab)(?1)+", "ababab");
+TEST_MATCH(277, "(ab)c(?<=(?1)c)d", "abcd"); // call inside lookbehind
+TEST_NOT_MATCH(278, "(ab)c(?<=(?1)x)d", "abcd");
+TEST_MATCH(279, "(a)(?=(?1))aa", "aaa"); // call inside lookahead
+TEST_MATCH(280, "((?2)b|x)(a)", "aba"); // group 1 calls group 2
+TEST_MATCH(281, "(a)((?1)b)(?2)", "aabab"); // chained calls
+TEST_MATCH(282, "a&b", "a&b"); // literal ampersand still matches
+TEST_MATCH(283, "[&x]+", "x&x");
+
+#if CTRE_CNTTP_COMPILER_CHECK
+// captures set inside a subroutine call revert (the call is non-capturing)
+static_assert(ctre::match<"([ab]c)(?1)">("acbc"sv).get<1>() == "ac"sv);
+static_assert(ctre::match<"((a)(b))(?1)">("abab"sv).get<2>() == "a"sv);
+static_assert(ctre::match<"((a)(b))(?1)">("abab"sv).get<3>() == "b"sv);
+static_assert(ctre::match<"((?<in>a))(?1)">("aa"sv).get<"in">() == "a"sv);
+#endif
+
 

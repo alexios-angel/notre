@@ -221,6 +221,17 @@ static_assert(same_f(CTRE_GEN("(?'name'x)"), ctre::capture_with_name<1,ctre::id<
 static_assert(same_f(CTRE_GEN("(?P<name>x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>()));
 static_assert(same_f(CTRE_GEN("(?'name'x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>()));
 
+// subroutine calls parse into placeholders (inlined later by resolve_subroutines)
+static_assert(same_f(CTRE_GEN("(x)(?1)"), ctre::sequence<ctre::capture<1,ctre::character<'x'>>,ctre::subroutine_call<1>>()));
+static_assert(same_f(CTRE_GEN("(x)(y)(?-2)"), ctre::sequence<ctre::capture<1,ctre::character<'x'>>,ctre::capture<2,ctre::character<'y'>>,ctre::subroutine_call<1>>()));
+static_assert(same_f(CTRE_GEN("(?+1)(x)"), ctre::sequence<ctre::subroutine_call<1>,ctre::capture<1,ctre::character<'x'>>>()));
+static_assert(same_f(CTRE_GEN("(?&name)"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
+static_assert(same_f(CTRE_GEN("(?P>name)"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
+static_assert(same_f(CTRE_GEN("\\g<name>"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
+static_assert(same_f(CTRE_GEN("\\g'name'"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
+static_assert(same_f(CTRE_GEN("\\g<1>"), ctre::subroutine_call<1>()));
+static_assert(same_f(CTRE_GEN("\\g'2'"), ctre::subroutine_call<2>()));
+
 static_assert(same_f(CTRE_GEN("()"), ctre::capture<1,ctre::empty>()));
 static_assert(same_f(CTRE_GEN("(a)(b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::capture<2,ctre::character<'b'>>>()));
 static_assert(same_f(CTRE_GEN("((a)(b))"), ctre::capture<1,ctre::capture<2,ctre::character<'a'>>,ctre::capture<3,ctre::character<'b'>>>()));

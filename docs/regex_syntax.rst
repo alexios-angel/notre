@@ -11,7 +11,7 @@ The library supports most of the `PCRE <pcre.org>`_ syntax with a few exceptions
 - named characters
 - octal numbers
 - options / modes
-- subroutines
+- recursion ((?R), (?0), recursive subroutine calls; non-recursive calls work)
 - unicode grapheme cluster (\\X)
 
 TODO more detailed regex information

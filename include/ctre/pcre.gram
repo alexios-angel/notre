@@ -58,6 +58,7 @@ exclamation_mark={!}
 doublequote={\"}
 hash={\#}
 apostrophe={'}
+ampersand={&}
 
 # Comment bodies may contain every character except the terminating close
 # parenthesis (PCRE: no nesting, no escaping inside (?#...)).
@@ -74,7 +75,7 @@ hexdec={0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,A,B,C,D,E,F}
 
 # Characters that are named terminals somewhere in this grammar but still
 # match as literal characters in ordinary pattern positions.
-nonspecial_characters={/,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,0,1,2,3,4,5,6,7,8,9,\,,:,!,=,_,\",\#,'}
+nonspecial_characters={/,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,0,1,2,3,4,5,6,7,8,9,\,,:,!,=,_,\",\#,',&}
 
 # Characters that are special outside a character class but literal inside one.
 nonspecial_characters_in_class={/,_,+,*,(,),.,$,\{,\},?,!,=,<,>,|,\"}
@@ -162,6 +163,15 @@ block->questionmark,apostrophe,<block_name>,apostrophe,<content_in_capture>,[mak
 # Comment: (?#...) runs to the first close parenthesis and vanishes.
 block->questionmark,hash,<comment_body>
 comment_body->comment_chars*,close,[make_comment]
+
+# Subroutine calls: (?N), relative (?+N)/(?-N), (?&name) and (?P>name).
+# A call is inlined after parsing as an atomic, non-capturing copy of the
+# referenced group (resolve_subroutines.hpp); recursion is rejected there.
+block->questionmark,<number>,[make_subroutine_call],close
+block->questionmark,minus,<number>,[make_subroutine_call_behind],close
+block->questionmark,plus,<number>,[make_subroutine_call_ahead],close
+block->questionmark,ampersand,<block_name>,[make_subroutine_call_with_name],close
+block->questionmark,P,angle_close,<block_name>,[make_subroutine_call_with_name],close
 
 block_name->alpha_characters,[push_name],(alphanum_characters,[push_name])*
 
@@ -271,6 +281,12 @@ backslash->g,copen,minus,<number>,cclose,[make_relative_back_reference]
 backslash->g,copen,<number>,cclose,[make_back_reference]
 backslash->g,copen,<block_name>,cclose,[make_back_reference]
 backslash->escape_backreference,[create_number],[make_back_reference]
+
+# Oniguruma-style subroutine calls: \g<N>, \g<name>, \g'N', \g'name'.
+backslash->g,angle_open,<number>,[make_subroutine_call],angle_close
+backslash->g,angle_open,<block_name>,[make_subroutine_call_with_name],angle_close
+backslash->g,apostrophe,<number>,[make_subroutine_call],apostrophe
+backslash->g,apostrophe,<block_name>,[make_subroutine_call_with_name],apostrophe
 
 # ---------------------------------------------------------------------------
 # Single characters and anchors

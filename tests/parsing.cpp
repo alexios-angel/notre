@@ -183,10 +183,44 @@ static_assert(!CTRE_TEST("(?#x))")); // ends at the first close paren; stray par
 static_assert(CTRE_TEST("(?<name>a)"));
 static_assert(CTRE_TEST("(?P<name>a)"));
 static_assert(CTRE_TEST("(?'name'a)"));
-static_assert(!CTRE_TEST("(?P[a])")); // P requires <name>
+static_assert(!CTRE_TEST("(?P[a])")); // P requires <name> or >name
 static_assert(!CTRE_TEST("(?P'name'a)")); // P only takes the angle form
 static_assert(!CTRE_TEST("(?'name)")); // unterminated name quote
 static_assert(!CTRE_TEST("(?''a)")); // empty name
 static_assert(!CTRE_TEST("(?P<name'a)")); // mismatched delimiters
+
+// subroutine call syntaxes
+static_assert(CTRE_TEST("(?1)"));
+static_assert(CTRE_TEST("(?12)"));
+static_assert(CTRE_TEST("(?-1)"));
+static_assert(CTRE_TEST("(?+1)"));
+static_assert(CTRE_TEST("(?&name)"));
+static_assert(CTRE_TEST("(?P>name)"));
+static_assert(CTRE_TEST("\\g<name>"));
+static_assert(CTRE_TEST("\\g'name'"));
+static_assert(CTRE_TEST("\\g<1>"));
+static_assert(CTRE_TEST("\\g'1'"));
+static_assert(!CTRE_TEST("(?R)")); // whole-pattern recursion is not supported
+static_assert(!CTRE_TEST("(?&)")); // missing name
+static_assert(!CTRE_TEST("\\g<name")); // unterminated
+static_assert(!CTRE_TEST("\\g<>")); // empty
+static_assert(!CTRE_TEST("(?P>name")); // unterminated
+
+// action-level rejects (need the semantic actions, not just the grammar)
+#if !CTRE_CNTTP_COMPILER_CHECK
+#define CTRE_SYNTAX(pattern) (pattern ## _ctre_syntax)
+#else
+template <ctll::fixed_string input> constexpr bool syntax_test() {
+	constexpr auto _input = input;
+	return ctll::parser<ctre::pcre, _input, ctre::pcre_actions>::template correct_with<ctre::pcre_context<>>;
+}
+#define CTRE_SYNTAX(pattern) syntax_test<pattern>()
+#endif
+
+static_assert(!CTRE_SYNTAX("(?0)")); // recursion of the whole pattern
+static_assert(!CTRE_SYNTAX("(?-1)")); // no group defined before the call
+static_assert(!CTRE_SYNTAX("(a)(?-2)")); // reaches before the first group
+static_assert(CTRE_SYNTAX("(a)(?-1)"));
+static_assert(CTRE_SYNTAX("(a)(?+1)(b)"));
 
 

@@ -52,6 +52,7 @@ struct pcre_actions {
 #include "actions/repeat.inc.hpp"
 #include "actions/sequence.inc.hpp"
 #include "actions/set.inc.hpp"
+#include "actions/subroutine.inc.hpp"
 #include "actions/mode.inc.hpp"
 
 };

@@ -60,6 +60,7 @@ if(CTRE_MODULE)
 			include/ctre/evaluation.hpp
 			include/ctre/starts_with_anchor.hpp
 			include/ctre/pcre_actions.hpp
+			include/ctre/resolve_subroutines.hpp
 			include/ctre/rotate.hpp
 			include/ctre/iterators.hpp
 			include/ctre/literals.hpp
@@ -81,6 +82,7 @@ if(CTRE_MODULE)
 			include/ctre/actions/options.inc.hpp
 			include/ctre/actions/atomic_group.inc.hpp
 			include/ctre/actions/set.inc.hpp
+			include/ctre/actions/subroutine.inc.hpp
 			include/ctre/actions/hexdec.inc.hpp
 			include/ctre/actions/repeat.inc.hpp
 			include/ctre/actions/properties.inc.hpp

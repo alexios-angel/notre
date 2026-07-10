@@ -67,6 +67,11 @@ template <size_t Index, typename Name, typename... Content> static auto rotate(c
 template <size_t Index> static auto rotate(back_reference<Index>) -> back_reference<Index>;
 template <typename Name> static auto rotate(back_reference_with_name<Name>) -> back_reference_with_name<Name>;
 
+// subroutine-call markers are leaves here; the expansion is rotated as a
+// whole when a call inside a lookbehind is resolved
+template <size_t Index> static auto rotate(subroutine_call<Index>) -> subroutine_call<Index>;
+template <typename Name> static auto rotate(subroutine_call_with_name<Name>) -> subroutine_call_with_name<Name>;
+
 template <typename... Content> static auto rotate(look_start<Content...>) -> look_start<Content...>;
 
 template <auto... Str> static auto rotate(string<Str...>) -> decltype((string<>{} + ... + rotate_value<Str>{}));

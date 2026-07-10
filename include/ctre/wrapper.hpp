@@ -3,6 +3,7 @@
 
 #include "evaluation.hpp"
 #include "range.hpp"
+#include "resolve_subroutines.hpp"
 #include "return_type.hpp"
 #include "utf8.hpp"
 #include "utility.hpp"
@@ -301,7 +302,10 @@ template <CTRE_REGEX_TEMPLATE_COPY_TYPE input> struct regex_builder {
 
 	static_assert(result::is_correct && problem_at_position<n>{}, "Regular Expression contains syntax error.");
 
-	using type = ctll::conditional<result::is_correct, decltype(ctll::front(typename result::output_type::stack_type())), ctll::list<reject>>;
+	using parsed_type = ctll::conditional<result::is_correct, decltype(ctll::front(typename result::output_type::stack_type())), ctll::list<reject>>;
+
+	// subroutine calls are inlined here, after the whole pattern is known
+	using type = decltype(ctre::resolve_subroutines(parsed_type{}));
 };
 
 // case-sensitive

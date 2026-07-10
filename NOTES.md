@@ -11,7 +11,7 @@
 * boundaries other than `^$`
 * atomic groups
 * options/modes
-* subroutines
+* recursion (subroutine calls are supported, but must not be recursive)
 * conditional patterns
 * callouts
 * match point reset `\K`
