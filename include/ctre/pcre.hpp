@@ -11,6 +11,7 @@ struct pcre {
 
 	// NONTERMINALS:
 	struct S {}; using _start = S;
+	struct alphanum_characters_push_name_anon {};
 	struct asserts {};
 	struct atom {};
 	struct atom_in_capture {};
@@ -25,7 +26,6 @@ struct pcre {
 	struct backslash_set {};
 	struct block {};
 	struct block_name {};
-	struct block_name2 {};
 	struct block_questionmark {};
 	struct block_questionmark_angle_open {};
 	struct character {};
@@ -40,23 +40,23 @@ struct pcre {
 	struct class_named_sopen {};
 	struct class_named_sopen_colon {};
 	struct comment_body {};
+	struct comment_chars_anon {};
 	struct content {};
 	struct content2 {};
 	struct content2_pipe {};
 	struct content_in_capture {};
 	struct content_or_empty {};
-	struct hexdec_repeat {};
+	struct hexdec_push_hexdec_anon {};
 	struct mod {};
 	struct mode_switch {};
 	struct mode_switch2 {};
+	struct num_push_number_anon {};
 	struct number {};
-	struct number2 {};
 	struct opt_content {};
 	struct preblock {};
 	struct property_name {};
 	struct property_name2 {};
 	struct property_value {};
-	struct property_value2 {};
 	struct range {};
 	struct range_minus {};
 	struct repeat {};
@@ -66,6 +66,7 @@ struct pcre {
 	struct set {};
 	struct set2a {};
 	struct set2b {};
+	struct set_push_property_value_anon {};
 	struct setitem {};
 	struct setitem2 {};
 	struct setitem2_backslash {};
@@ -181,7 +182,6 @@ struct pcre {
 	using star = ctll::term<'*'>;
 	using questionmark = ctll::term<'?'>;
 	using copen = ctll::term<'\x7B'>;
-	using comma__cclose = ctll::set<',','\x7D'>;
 	using angle_close = ctll::term<'>'>;
 	using equal_sign = ctll::term<'='>;
 	using exclamation_mark = ctll::term<'!'>;
@@ -193,8 +193,6 @@ struct pcre {
 	using P = ctll::term<'P'>;
 	using hash = ctll::term<'#'>;
 	using comment_chars = ctll::neg_set<'\x29'>;
-	using alphanum_characters = ctll::set<'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
-	using quote__angle_close__cclose = ctll::set<'\'','>','\x7D'>;
 	using i = ctll::term<'i'>;
 	using c = ctll::term<'c'>;
 	using s = ctll::term<'s'>;
@@ -247,6 +245,9 @@ struct pcre {
 	using set_11 = ctll::set<'!','\"','#','\'',',','-','/','0','1','2','3','4','5','6','7','8','9',':','<','=','>','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',']','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
 	using dot = ctll::term<'.'>;
 	using dolar = ctll::term<'$'>;
+	using comma__cclose = ctll::set<',','\x7D'>;
+	using alphanum_characters = ctll::set<'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','_','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'>;
+	using quote__angle_close__cclose = ctll::set<'\'','>','\x7D'>;
 
 	// (q)LL1 function:
 	static constexpr auto rule(S, set_1) -> ctll::push<content>;
@@ -330,10 +331,7 @@ struct pcre {
 	static constexpr auto rule(mod, questionmark) -> ctll::push<ctll::anything, make_lazy>;
 	static constexpr auto rule(mod, plus) -> ctll::push<ctll::anything, make_possessive>;
 
-	static constexpr auto rule(number, num) -> ctll::push<ctll::anything, create_number, number2>;
-
-	static constexpr auto rule(number2, comma__cclose) -> ctll::epsilon;
-	static constexpr auto rule(number2, num) -> ctll::push<ctll::anything, push_number, number2>;
+	static constexpr auto rule(number, num) -> ctll::push<ctll::anything, create_number, num_push_number_anon>;
 
 	static constexpr auto rule(preblock, open) -> ctll::push<ctll::anything, prepare_capture, block>;
 
@@ -355,13 +353,10 @@ struct pcre {
 	static constexpr auto rule(block, _others) -> ctll::push<content_in_capture, make_capture, close>;
 	static constexpr auto rule(block, questionmark) -> ctll::push<ctll::anything, block_questionmark>;
 
-	static constexpr auto rule(comment_body, close) -> ctll::push<ctll::anything, make_comment>;
-	static constexpr auto rule(comment_body, comment_chars) -> ctll::push<ctll::anything, comment_body>;
+	static constexpr auto rule(comment_body, close) -> ctll::push<comment_chars_anon, close, make_comment>;
+	static constexpr auto rule(comment_body, comment_chars) -> ctll::push<comment_chars_anon, close, make_comment>;
 
-	static constexpr auto rule(block_name, alpha_characters) -> ctll::push<ctll::anything, push_name, block_name2>;
-
-	static constexpr auto rule(block_name2, alphanum_characters) -> ctll::push<ctll::anything, push_name, block_name2>;
-	static constexpr auto rule(block_name2, quote__angle_close__cclose) -> ctll::epsilon;
+	static constexpr auto rule(block_name, alpha_characters) -> ctll::push<ctll::anything, push_name, alphanum_characters_push_name_anon>;
 
 	static constexpr auto rule(mode_switch, i) -> ctll::push<ctll::anything, mode_case_insensitive, mode_switch2>;
 	static constexpr auto rule(mode_switch, c) -> ctll::push<ctll::anything, mode_case_sensitive, mode_switch2>;
@@ -441,10 +436,10 @@ struct pcre {
 	static constexpr auto rule(range, minus) -> ctll::push<ctll::anything, range_minus>;
 
 	static constexpr auto rule(backslash_range_u, hexdec) -> ctll::push<create_hexdec, ctll::anything, push_hexdec, hexdec, push_hexdec, hexdec, push_hexdec, hexdec, push_hexdec, finish_hexdec>;
-	static constexpr auto rule(backslash_range_u, copen) -> ctll::push<create_hexdec, ctll::anything, hexdec, push_hexdec, hexdec_repeat, cclose, finish_hexdec>;
+	static constexpr auto rule(backslash_range_u, copen) -> ctll::push<create_hexdec, ctll::anything, hexdec, push_hexdec, hexdec_push_hexdec_anon, cclose, finish_hexdec>;
 
 	static constexpr auto rule(backslash_range_x, hexdec) -> ctll::push<create_hexdec, ctll::anything, push_hexdec, hexdec, push_hexdec, finish_hexdec>;
-	static constexpr auto rule(backslash_range_x, copen) -> ctll::push<create_hexdec, ctll::anything, hexdec, push_hexdec, hexdec_repeat, cclose, finish_hexdec>;
+	static constexpr auto rule(backslash_range_x, copen) -> ctll::push<create_hexdec, ctll::anything, hexdec, push_hexdec, hexdec_push_hexdec_anon, cclose, finish_hexdec>;
 
 	static constexpr auto rule(backslash_range, set_10) -> ctll::push<ctll::anything, push_character>;
 	static constexpr auto rule(backslash_range, u) -> ctll::push<ctll::anything, backslash_range_u>;
@@ -456,9 +451,6 @@ struct pcre {
 	static constexpr auto rule(backslash_range, a) -> ctll::push<ctll::anything, push_character_alarm>;
 	static constexpr auto rule(backslash_range, e) -> ctll::push<ctll::anything, push_character_escape>;
 	static constexpr auto rule(backslash_range, f) -> ctll::push<ctll::anything, push_character_formfeed>;
-
-	static constexpr auto rule(hexdec_repeat, hexdec) -> ctll::push<ctll::anything, push_hexdec, hexdec_repeat>;
-	static constexpr auto rule(hexdec_repeat, cclose) -> ctll::epsilon;
 
 	static constexpr auto rule(backslash_set, d) -> ctll::push<ctll::anything, class_digit>;
 	static constexpr auto rule(backslash_set, D) -> ctll::push<ctll::anything, class_nondigit>;
@@ -493,13 +485,10 @@ struct pcre {
 	static constexpr auto rule(property_name, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_name, property_name2>;
 
 	static constexpr auto rule(property_name2, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_name, property_name2>;
-	static constexpr auto rule(property_name2, cclose) -> ctll::epsilon;
 	static constexpr auto rule(property_name2, equal_sign) -> ctll::push<ctll::anything, property_value>;
+	static constexpr auto rule(property_name2, cclose) -> ctll::epsilon;
 
-	static constexpr auto rule(property_value, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_value, property_value2>;
-
-	static constexpr auto rule(property_value2, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_value, property_value2>;
-	static constexpr auto rule(property_value2, cclose) -> ctll::epsilon;
+	static constexpr auto rule(property_value, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_value, set_push_property_value_anon>;
 
 	static constexpr auto rule(character, set_11) -> ctll::push<ctll::anything, push_character>;
 	static constexpr auto rule(character, _others) -> ctll::push<ctll::anything, push_character>;
@@ -511,6 +500,21 @@ struct pcre {
 
 	static constexpr auto rule(asserts, caret) -> ctll::push<ctll::anything, push_assert_begin>;
 	static constexpr auto rule(asserts, dolar) -> ctll::push<ctll::anything, push_assert_end>;
+
+	static constexpr auto rule(num_push_number_anon, num) -> ctll::push<ctll::anything, push_number, num_push_number_anon>;
+	static constexpr auto rule(num_push_number_anon, comma__cclose) -> ctll::epsilon;
+
+	static constexpr auto rule(comment_chars_anon, comment_chars) -> ctll::push<ctll::anything, comment_chars_anon>;
+	static constexpr auto rule(comment_chars_anon, close) -> ctll::epsilon;
+
+	static constexpr auto rule(alphanum_characters_push_name_anon, alphanum_characters) -> ctll::push<ctll::anything, push_name, alphanum_characters_push_name_anon>;
+	static constexpr auto rule(alphanum_characters_push_name_anon, quote__angle_close__cclose) -> ctll::epsilon;
+
+	static constexpr auto rule(hexdec_push_hexdec_anon, hexdec) -> ctll::push<ctll::anything, push_hexdec, hexdec_push_hexdec_anon>;
+	static constexpr auto rule(hexdec_push_hexdec_anon, cclose) -> ctll::epsilon;
+
+	static constexpr auto rule(set_push_property_value_anon, dot__alphanum_characters) -> ctll::push<ctll::anything, push_property_value, set_push_property_value_anon>;
+	static constexpr auto rule(set_push_property_value_anon, cclose) -> ctll::epsilon;
 
 };
 

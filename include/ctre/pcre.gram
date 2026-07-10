@@ -1,3 +1,37 @@
+# PCRE-flavored regular expression grammar for CTRE.
+#
+# This file is the source of truth for include/ctre/pcre.hpp, the LL(1)
+# parse table that CTLL (the compile-time LL parser) walks character by
+# character while your C++ compiles. Regenerate the table with:
+#
+#     make regrammar
+#
+# which runs Tablewright (https://github.com/alexios-angel/Tablewright),
+# an open-source replacement for the closed-source desatomat tool the
+# upstream project used. Run `tablewright --syntax` for the full .gram
+# dialect reference. The grammar structure descends from Hana Dusikova's
+# CTRE; see NOTICE for attribution.
+#
+# Dialect legend:
+#   name={a,b,c}    named terminal set; renders as a `using` alias in pcre.hpp
+#   sigma-{...}     negative set: any character except those listed
+#   [[a-z0-9]]      inline character range; identical sets alias to one name
+#   "string"        string literal, expands to one atom per character
+#   [action]        semantic action, handled by pcre_actions.hpp includes
+#   (X,[act])*/+    quantified group, expands to a named helper nonterminal
+#   <name>          nonterminal reference; epsilon is the empty production
+#   \c              escaped literal character (\\, \{, \#, ...)
+#
+# Characters not in any named set below fall into the implicit `other`
+# terminal, which the table matches with a single negative set. Because of
+# that, naming a new single-character terminal REMOVES it from `other`:
+# if the character should still match as a literal, add it to
+# nonspecial_characters too (see hash and apostrophe).
+
+# ---------------------------------------------------------------------------
+# Terminal sets: single characters with syntactic meaning
+# ---------------------------------------------------------------------------
+
 backslash={\\}
 slash={/}
 dot={.}
@@ -24,27 +58,56 @@ exclamation_mark={!}
 doublequote={\"}
 hash={\#}
 apostrophe={'}
+
+# Comment bodies may contain every character except the terminating close
+# parenthesis (PCRE: no nesting, no escaping inside (?#...)).
 comment_chars=sigma-{)}
 
-escape_alphanum={b,c,h,i,j,k,l,m,o,q,v,y,z,A,B,C,E,F,G,H,I,J,K,L,M,O,Q,U,V,X,Y,Z,1,2,3,4,5,6,7,8,9}
+# ---------------------------------------------------------------------------
+# Terminal sets: character groups
+# ---------------------------------------------------------------------------
+
+# Backreference shorthands \1..\9 (\0 is the NUL escape, not a reference).
 escape_backreference={1,2,3,4,5,6,7,8,9}
+
 hexdec={0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,A,B,C,D,E,F}
-octal={0,1,2,3,4,5,6,7}
+
+# Characters that are named terminals somewhere in this grammar but still
+# match as literal characters in ordinary pattern positions.
 nonspecial_characters={/,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,0,1,2,3,4,5,6,7,8,9,\,,:,!,=,_,\",\#,'}
+
+# Characters that are special outside a character class but literal inside one.
 nonspecial_characters_in_class={/,_,+,*,(,),.,$,\{,\},?,!,=,<,>,|,\"}
+
+# Capture-group names: leading character, then continuation characters.
 alpha_characters={a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,_}
 alphanum_characters={a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,0,1,2,3,4,5,6,7,8,9,_}
+
+# Class-syntax characters that are literals in ordinary pattern positions.
 set_control_chars={:,],-}
 capture_control_chars={<}
 
+# ---------------------------------------------------------------------------
+# Top level: alternation of sequences
+#
+# NOTE: content2 and string2 fire [make_alternate]/[make_sequence] AFTER
+# their recursive tail, so the AST folds right to left. Do not rewrite these
+# recursions with (X)* sugar - the helper it expands to fires actions once
+# per iteration instead, which builds a differently shaped (nested) AST.
+# ---------------------------------------------------------------------------
+
+# A whole pattern: content, nothing, or an alternation with an empty branch.
 S-><content> | epsilon,[push_empty] | pipe,[push_empty],<opt_content>,[make_alternate]
 
 opt_content->epsilon,[push_empty]|<content>
 content-><string>,<content2>
-content_in_capture-><string_in_capture>,<content2> | epsilon,[push_empty] 
+
+# Same as content, but inside (...) where an empty group body is allowed.
+content_in_capture-><string_in_capture>,<content2> | epsilon,[push_empty]
 content_in_capture->pipe,[push_empty],<content_or_empty>,[make_alternate]
 content_or_empty-><content> | epsilon,[push_empty]
 
+# "|rest", "|" (empty right branch), or end of alternation.
 content2->pipe,<content>,[make_alternate] |pipe,[push_empty],[make_alternate] | epsilon
 
 string-><atom_repeat>,<string2>
@@ -53,22 +116,33 @@ string2-><atom_repeat>,<string2>,[make_sequence] | epsilon
 string_in_capture-><atom_repeat_in_capture>,<string2>
 
 atom_repeat-><atom>,<repeat>
-
 atom_repeat_in_capture-><atom_in_capture>,<repeat>
 
 atom-><character>|<asserts>|<preblock>|<character_class>
 atom_in_capture-><character_in_capture>|<asserts>|<preblock>|<character_class>
+
+# ---------------------------------------------------------------------------
+# Quantifiers: + * ? {n} {n,} {n,m}, each with an optional lazy/possessive mod
+# ---------------------------------------------------------------------------
 
 repeat->epsilon | plus,[repeat_plus],<mod>|star,[repeat_star],<mod>|questionmark,[make_optional],<mod>
 repeat->copen,<number>,[repeat_exactly],cclose
 repeat->copen,<number>,comma,[repeat_at_least],cclose,<mod>
 repeat->copen,<number>,comma,<number>,[repeat_ab],cclose,<mod>
 
+# ? after a quantifier makes it lazy, + makes it possessive
 mod->epsilon | questionmark,[make_lazy] | plus,[make_possessive]
 
-number->num,[create_number],<number2>
-number2->epsilon | num,[push_number],<number2>
+# A decimal number, accumulated digit by digit.
+number->num,[create_number],(num,[push_number])*
 
+# ---------------------------------------------------------------------------
+# Groups: (...) (?<name>...) (?P<name>...) (?'name'...) (?:...) (?>...)
+#         lookarounds, inline mode switches and (?#comments)
+# ---------------------------------------------------------------------------
+
+# Every group prepares a capture id; the non-capturing forms drop it again
+# ([reset_capture], or [make_comment]/mode actions which also cancel it).
 preblock->open,[prepare_capture],<block>
 
 block-><content_in_capture>,[make_capture],close
@@ -79,30 +153,36 @@ block->questionmark,angle_open,equal_sign,[reset_capture],[start_lookbehind_posi
 block->questionmark,exclamation_mark,[reset_capture],[start_lookahead_negative],<content_in_capture>,[look_finish],close
 block->questionmark,angle_open,exclamation_mark,[reset_capture],[start_lookbehind_negative],<content_in_capture>,[look_finish],close
 block->questionmark,colon,[reset_capture],<content_in_capture>,close
+
+# Named captures: (?<name>...), (?P<name>...) and (?'name'...) are synonyms.
 block->questionmark,angle_open,<block_name>,angle_close,<content_in_capture>,[make_capture_with_name],close
 block->questionmark,P,angle_open,<block_name>,angle_close,<content_in_capture>,[make_capture_with_name],close
 block->questionmark,apostrophe,<block_name>,apostrophe,<content_in_capture>,[make_capture_with_name],close
+
+# Comment: (?#...) runs to the first close parenthesis and vanishes.
 block->questionmark,hash,<comment_body>
+comment_body->comment_chars*,close,[make_comment]
 
-# comment runs to the first close parenthesis; no nesting, no escaping
-comment_body->close,[make_comment]
-comment_body->comment_chars,<comment_body>
+block_name->alpha_characters,[push_name],(alphanum_characters,[push_name])*
 
-block_name->alpha_characters,[push_name],<block_name2>
-block_name2->alphanum_characters,[push_name],<block_name2>|epsilon
-
+# Inline modes: one or more of i c s m, then ) - e.g. (?i), (?im).
 mode_switch->i,[mode_case_insensitive],<mode_switch2>
 mode_switch->c,[mode_case_sensitive],<mode_switch2>
 mode_switch->s,[mode_singleline],<mode_switch2>
 mode_switch->m,[mode_multiline],<mode_switch2>
 mode_switch2->close | <mode_switch>
 
+# ---------------------------------------------------------------------------
+# Character classes: [...] and [^...]
+# ---------------------------------------------------------------------------
+
 character_class->sopen,<set>,[set_make],sclose|sopen,caret,<set2a>,[set_make_negative],sclose
 set-><setitem>,[set_start],<set2b>
 set2a-><setitem2>,[set_start],<set2b>|epsilon,[set_empty]
 set2b-><setitem2>,[set_combine],<set2b>|epsilon
 
-class_named->sopen,colon,<class_named_name>,colon,sclose | sopen,colon,caret,<class_named_name>,[negate_class_named],colon,sclose 
+# POSIX named classes: [[:alpha:]], negated as [[:^alpha:]].
+class_named->sopen,colon,<class_named_name>,colon,sclose | sopen,colon,caret,<class_named_name>,[negate_class_named],colon,sclose
 class_named_name->"alnum",[class_named_alnum]
 class_named_name->"alpha",[class_named_alpha]
 class_named_name->"ascii",[class_named_ascii]
@@ -118,32 +198,36 @@ class_named_name->"upper",[class_named_upper]
 class_named_name->"word",[class_named_word]
 class_named_name->"xdigit",[class_named_xdigit]
 
-
+# setitem2 additionally allows a literal ^ (only the leading ^ negates).
 setitem->other,[push_character],<range> | nonspecial_characters,[push_character],<range> | nonspecial_characters_in_class,[push_character],<range>
 setitem-><class_named>,<range>
 setitem->backslash,<backslash_range>,<range> | backslash,<backslash_set>
 
-setitem2->other,[push_character],<range> | nonspecial_characters,[push_character],<range> | nonspecial_characters_in_class,[push_character],<range> 
+setitem2->other,[push_character],<range> | nonspecial_characters,[push_character],<range> | nonspecial_characters_in_class,[push_character],<range>
 setitem2->caret,[push_character],<range>
 setitem2-><class_named>,<range>
 setitem2->backslash,<backslash_range>,<range> | backslash,<backslash_set>
 
-
+# An optional -end making a range out of the previous character.
 range->epsilon
 range->minus,other,[push_character],[make_range]|minus,nonspecial_characters,[push_character],[make_range]
 range->minus,backslash,<backslash_range>,[make_range]|minus,nonspecial_characters_in_class,[push_character],[make_range]
 range->minus,caret,[push_character],[make_range]
 
-# backslash range can be used in range match
+# ---------------------------------------------------------------------------
+# Escapes
+# ---------------------------------------------------------------------------
+
+# Escapes that denote a single character; usable as a range endpoint.
 backslash_range-><special>,[push_character]
 special->dot|sopen|sclose|copen|cclose|open|close|backslash|star|plus|questionmark|pipe|caret|dolar|minus|slash
 
-hexdec_repeat->hexdec,[push_hexdec],<hexdec_repeat>|epsilon
-
+# Code points: \uFFFF (exactly 4 hex digits), \u{F..} (1 to 6 digits),
+# and \x{F..}, accumulated one hex digit at a time.
 backslash_range->u,[create_hexdec],hexdec,[push_hexdec],hexdec,[push_hexdec],hexdec,[push_hexdec],hexdec,[push_hexdec],[finish_hexdec]
-backslash_range->u,[create_hexdec],copen,hexdec,[push_hexdec],<hexdec_repeat>,cclose,[finish_hexdec]
+backslash_range->u,[create_hexdec],copen,(hexdec,[push_hexdec])+,cclose,[finish_hexdec]
 backslash_range->x,[create_hexdec],hexdec,[push_hexdec],hexdec,[push_hexdec],[finish_hexdec]
-backslash_range->x,[create_hexdec],copen,hexdec,[push_hexdec],<hexdec_repeat>,cclose,[finish_hexdec]
+backslash_range->x,[create_hexdec],copen,(hexdec,[push_hexdec])+,cclose,[finish_hexdec]
 backslash_range->n,[push_character_newline]
 backslash_range->t,[push_character_tab]
 backslash_range->r,[push_character_return_carriage]
@@ -156,44 +240,44 @@ backslash_range->doublequote,[push_character]
 backslash_range->angle_open,[push_character]
 backslash_range->angle_close,[push_character]
 
-# sets generates a set of matches and can't be used in range
+# Escapes that denote a set of characters; not usable as a range endpoint.
 backslash_set->d,[class_digit]|D,[class_nondigit]
 backslash_set->w,[class_word]|W,[class_nonword]
 backslash_set->N,[class_nonnewline]
 backslash_set->s,[class_space]|S,[class_nonspace]
 backslash_set->v,[class_vertical_space]|V,[class_non_vertical_space]
 backslash_set->h,[class_horizontal_space]|H,[class_non_horizontal_space]
+
+# Unicode properties: \p{Name}, \p{Name=Value} and the negated \P{...}.
 backslash_set->p,copen,<property_name>,cclose,[make_property]
 backslash_set->P,copen,<property_name>,cclose,[make_property_negative]
 
-# plain backslash can be used only outside of character set
+# Anchors and boundaries available only outside a character class.
 backslash->A,[push_assert_subject_begin]
 backslash->z,[push_assert_subject_end]
 backslash->Z,[push_assert_subject_end_with_lineend]
 backslash->b,[push_word_boundary]
 backslash->B,[push_not_word_boundary]
 
-property_name->alphanum_characters,[push_property_name],<property_name2>
-property_name->dot,[push_property_name],<property_name2>
-property_name2->alphanum_characters,[push_property_name],<property_name2>|epsilon|equal_sign,<property_value>
-property_name2->dot,[push_property_name],<property_name2>|epsilon|equal_sign,<property_value>
-
-property_value->alphanum_characters,[push_property_value],<property_value2>
-property_value->dot,[push_property_value],<property_value2>
-property_value2->alphanum_characters,[push_property_value],<property_value2>|epsilon
-property_value2->dot,[push_property_value],<property_value2>|epsilon
+# Property names and values share one alphabet (letters, digits, _ and .).
+property_name->[[a-zA-Z0-9_.]],[push_property_name],<property_name2>
+property_name2->[[a-zA-Z0-9_.]],[push_property_name],<property_name2> | equal_sign,<property_value> | epsilon
+property_value->[[a-zA-Z0-9_.]],[push_property_value],([[a-zA-Z0-9_.]],[push_property_value])*
 
 backslash-><backslash_range>|<backslash_set>
 
+# Back-references: \g{1}, \g{-1} (relative), \g{name}, and \1..\9.
 backslash->g,copen,minus,<number>,cclose,[make_relative_back_reference]
 backslash->g,copen,<number>,cclose,[make_back_reference]
 backslash->g,copen,<block_name>,cclose,[make_back_reference]
 backslash->escape_backreference,[create_number],[make_back_reference]
+
+# ---------------------------------------------------------------------------
+# Single characters and anchors
+# ---------------------------------------------------------------------------
 
 character->other,[push_character] | nonspecial_characters,[push_character] | set_control_chars,[push_character] | dot,[push_character_anything] | backslash,<backslash>|capture_control_chars,[push_character] | \>,[push_character]
 
 character_in_capture-><character>
 
 asserts->caret,[push_assert_begin] | dolar,[push_assert_end]
-
-
