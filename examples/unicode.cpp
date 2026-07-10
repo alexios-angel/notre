@@ -32,4 +32,14 @@ int main() {
 		std::cout << " " << cast_from_unicode(match);
 	}
 	std::cout << "\n";
+
+	// \X matches one grapheme cluster (a code point plus its combining
+	// marks), where . matches a single code point: "e" + U+0301 is two
+	// code points but one cluster
+	std::u8string_view decomposed = u8"éàu"sv;
+	size_t clusters = 0;
+	for ([[maybe_unused]] auto match : ctre::search_all<"\\X">(decomposed)) {
+		++clusters;
+	}
+	std::cout << "code units: " << decomposed.size() << ", clusters: " << clusters << "\n";
 }

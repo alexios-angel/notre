@@ -39,4 +39,10 @@ int main() {
 	if (auto m = ctre::search<"[0-9]+">("port is 8080, ok?"sv)) {
 		std::cout << "searched number:                  " << m.to_view() << "\n";
 	}
+
+	// patterns can carry (?#comments), octal escapes and control characters
+	std::cout << "with a comment:                   "
+	          << bool(ctre::match<"ab(?#matches nothing, documents plenty)c">("abc"sv)) << "\n";
+	std::cout << "\\o{101} is 'A':                   " << bool(ctre::match<"\\o{101}">("A"sv)) << "\n";
+	std::cout << "\\cI is a tab:                     " << bool(ctre::match<"a\\cIb">("a\tb"sv)) << "\n";
 }

@@ -1,8 +1,9 @@
 // Named capture groups and numeric conversion.
 //
-// Groups declared as (?<name>...) can be accessed with get<"name">()
-// (C++20). Numbered access get<N>() always works too — capture 0 is the
-// whole match, explicit groups count from 1.
+// Groups declared as (?<name>...) — or with the equivalent (?P<name>...)
+// and (?'name'...) syntaxes — can be accessed with get<"name">() (C++20).
+// Numbered access get<N>() always works too: capture 0 is the whole
+// match, explicit groups count from 1.
 //
 // to_number<R>() converts a capture using std::from_chars.
 //
@@ -31,4 +32,10 @@ int main() {
 		// the same groups are also reachable by number:
 		std::cout << "get<1>: " << m.get<1>() << "\n";
 	}
+
+	// all three declaration syntaxes are equivalent, and \g{name}
+	// backreferences work with any of them
+	std::cout << std::boolalpha;
+	std::cout << "(?P<w>ab) matches:      " << bool(ctre::match<"(?P<w>ab)">("ab"sv)) << "\n";
+	std::cout << "(?'w'ab)\\g{w} on abab:  " << bool(ctre::match<"(?'w'ab)\\g{w}">("abab"sv)) << "\n";
 }
