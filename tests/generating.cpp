@@ -213,7 +213,13 @@ static_assert(same_f(CTRE_GEN("(?<name>x)"), ctre::capture_with_name<1,ctre::id<
 static_assert(same_f(CTRE_GEN("(?<name>xy)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::string<'x','y'>>())); 
 static_assert(same_f(CTRE_GEN("(?<name>x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>())); 
 static_assert(same_f(CTRE_GEN("(?<xy>[x]y)"), ctre::capture_with_name<1,ctre::id<'x','y'>,ctre::set<ctre::character<'x'>>,ctre::character<'y'>>())); 
-static_assert(same_f(CTRE_GEN("(?<xy>[x]y)(a)"), ctre::sequence<ctre::capture_with_name<1,ctre::id<'x','y'>,ctre::set<ctre::character<'x'>>,ctre::character<'y'>>, ctre::capture<2,ctre::character<'a'>>>())); 
+static_assert(same_f(CTRE_GEN("(?<xy>[x]y)(a)"), ctre::sequence<ctre::capture_with_name<1,ctre::id<'x','y'>,ctre::set<ctre::character<'x'>>,ctre::character<'y'>>, ctre::capture<2,ctre::character<'a'>>>()));
+
+// (?P<name>...) and (?'name'...) build the same AST as (?<name>...)
+static_assert(same_f(CTRE_GEN("(?P<name>x)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::character<'x'>>()));
+static_assert(same_f(CTRE_GEN("(?'name'x)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::character<'x'>>()));
+static_assert(same_f(CTRE_GEN("(?P<name>x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>()));
+static_assert(same_f(CTRE_GEN("(?'name'x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>()));
 
 static_assert(same_f(CTRE_GEN("()"), ctre::capture<1,ctre::empty>()));
 static_assert(same_f(CTRE_GEN("(a)(b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::capture<2,ctre::character<'b'>>>()));

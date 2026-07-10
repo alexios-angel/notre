@@ -265,4 +265,16 @@ TEST_MATCH(248, "#+", "###"); // literal hash still matches
 TEST_MATCH(249, "[#a]+", "a#a");
 TEST_MATCH(250, "(#)x", "#x");
 
+// named captures: (?P<name>...) and (?'name'...) syntaxes (issue #325)
+TEST_MATCH(251, "(?P<name>a)", "a");
+TEST_MATCH(252, "(?'name'a)", "a");
+TEST_MATCH(253, "(?'test1'test1)|(?<test2>test2)|(?P<test3>test3)", "test2");
+TEST_MATCH(254, "(?'x'[ab])\\g{x}", "aa");
+TEST_NOT_MATCH(255, "(?'x'[ab])\\g{x}", "ab");
+TEST_MATCH(256, "'+", "'''"); // literal apostrophe still matches
+TEST_MATCH(257, "[a']+", "a'a");
+TEST_MATCH(258, "don't", "don't");
+TEST_MATCH(259, "P+", "PPP"); // P is still an ordinary literal
+TEST_MATCH(260, "(?<P>P)", "P");
+
 

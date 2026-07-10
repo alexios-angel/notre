@@ -179,4 +179,14 @@ static_assert(CTRE_TEST("(?#anything but a close paren: [{(^$.*+?|\\)"));
 static_assert(!CTRE_TEST("(?#unterminated"));
 static_assert(!CTRE_TEST("(?#x))")); // ends at the first close paren; stray paren is an error
 
+// named capture syntaxes (issue #325)
+static_assert(CTRE_TEST("(?<name>a)"));
+static_assert(CTRE_TEST("(?P<name>a)"));
+static_assert(CTRE_TEST("(?'name'a)"));
+static_assert(!CTRE_TEST("(?P[a])")); // P requires <name>
+static_assert(!CTRE_TEST("(?P'name'a)")); // P only takes the angle form
+static_assert(!CTRE_TEST("(?'name)")); // unterminated name quote
+static_assert(!CTRE_TEST("(?''a)")); // empty name
+static_assert(!CTRE_TEST("(?P<name'a)")); // mismatched delimiters
+
 

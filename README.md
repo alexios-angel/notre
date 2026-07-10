@@ -47,7 +47,7 @@ What the library can do:
 * Matching (`match` — whole input must match)
 * Searching (`search` — find a match anywhere; `starts_with` — match a prefix)
 * Iterating over all matches (`search_all`), splitting (`split`), tokenizing (`tokenize`)
-* Capturing content, including named captures with the `(?<name>...)` syntax
+* Capturing content, including named captures — `(?<name>...)`, `(?P<name>...)`, and `(?'name'...)` syntaxes
 * Back-references (`\g{N}` syntax, and `\1`...`\9` too)
 * Lookahead `(?=...)` / `(?!...)` and lookbehind `(?<=...)` / `(?<!...)`
 * Atomic groups `(?>...)` and possessive quantifiers (`a++`, `a*+`, ...)
