@@ -20,3 +20,6 @@ tests/benchmark-range/*
 build
 cmake-build-*/*
 .idea/*
+.claude
+*.pch
+*.gch

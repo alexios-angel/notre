@@ -1,4 +1,4 @@
-.PHONY: default all clean grammar compare single-header single-header/ctre.hpp single-header/ctre-unicode.hpp single-header/unicode-db.hpp
+.PHONY: default all clean grammar compare single-header single-header/ctre.hpp single-header/ctre-unicode.hpp single-header/unicode-db.hpp pch
 
 default: all
 	
@@ -17,6 +17,16 @@ PYTHON := python3.9
 PEDANTIC:=-pedantic
 
 override CXXFLAGS := $(CXXFLAGS) -std=c++$(CXX_STANDARD) -Iinclude -O3 $(PEDANTIC) -Wall -Wextra -Werror -Wconversion
+
+# precompiled header: ctre.hpp is parsed once instead of once per test
+CXX_IS_CLANG := $(shell $(CXX) --version 2>/dev/null | grep -qi clang && echo yes)
+ifeq ($(CXX_IS_CLANG),yes)
+PCH := ctre.pch
+PCH_USE = -include-pch $(PCH)
+else
+PCH := include/ctre.hpp.gch
+PCH_USE =
+endif
 LDFLAGS := 
 
 TESTS := $(wildcard tests/*.cpp) $(wildcard tests/benchmark/*.cpp)
@@ -34,8 +44,13 @@ list:
 $(TRUE_TARGETS): %: %.o
 	$(CXX)  $< $(LDFLAGS) -o $@ 
 	
-$(OBJECTS): %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
+$(OBJECTS): %.o: %.cpp $(PCH)
+	$(CXX) $(CXXFLAGS) $(PCH_USE) -MMD -c $< -o $@
+
+pch: $(PCH)
+
+$(PCH): include/ctre.hpp
+	$(CXX) $(CXXFLAGS) -x c++-header $< -o $@
 
 -include $(DEPEDENCY_FILES)
 
@@ -47,7 +62,7 @@ benchmark-clean:
 	@$(MAKE) IGNORE="" clean
 
 clean:
-	rm -f $(TRUE_TARGETS) $(OBJECTS) $(DEPEDENCY_FILES) mtent12.txt mtent12.zip
+	rm -f $(TRUE_TARGETS) $(OBJECTS) $(DEPEDENCY_FILES) mtent12.txt mtent12.zip ctre.pch include/ctre.hpp.gch
 	
 grammar: include/ctre/pcre.hpp
 	
