@@ -344,7 +344,8 @@ template <NOTRE_REGEX_TEMPLATE_COPY_TYPE input> struct regex_builder {
 	static_assert(syntax_ok,
 	              "notre: the regular expression has a syntax error - the failing offset is the N "
 	              "in problem_at_position<N> below; call notre::error_message<pattern>() for a caret "
-	              "at that spot, or define NOTRE_VERBOSE_ERRORS to see the line and column here");
+	              "at that spot, or define NOTRE_VERBOSE_ERRORS to see the line and column here."
+                  "You can also call notre::debug::dump_ast<pattern>() to get useful debug info.");
 
 	// the classic position-bearing trigger: names the failing offset N in
 	// the diagnostic (problem_at_position<N> is left undefined on purpose)
