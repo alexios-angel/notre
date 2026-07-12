@@ -45,6 +45,12 @@ static_assert(notre::error_message<"a(b|c">() ==
               "  a(b|c\n"
               "       ^"sv);
 
+// the queries ignore any arguments, so match<P>(args...) can be debugged
+// by swapping in error_message<P>(args...) / error_info<P>(args...)
+static_assert(notre::error_message<"a(b|c">("some subject") == notre::error_message<"a(b|c">());
+static_assert(notre::error_info<"a(b|c">("subject").column == 6);
+static_assert(notre::error_info<"a(b|c">("ab"sv.begin(), "ab"sv.end()).kind == notre::error_kind::syntax);
+
 // ---------------------------------------------------------------------------
 // dump_ast<> : the compiled atom tree (the "what did my regex become" tool)
 // ---------------------------------------------------------------------------

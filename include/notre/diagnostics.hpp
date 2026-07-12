@@ -222,8 +222,13 @@ template <NOTRE_PATTERN_COPY input> struct message_storage {
 NOTRE_EXPORT template <NOTRE_PATTERN_INPUT pattern> constexpr bool valid = detail::parse_probe<pattern>::ok;
 
 // what failed and where: kind, byte offset, line and column
-// (kind == error_kind::none when the pattern is valid)
-NOTRE_EXPORT template <NOTRE_PATTERN_INPUT pattern> constexpr error_info_t error_info() noexcept {
+// (kind == error_kind::none when the pattern is valid). Any arguments
+// are ignored - these queries are about the PATTERN, not a subject - so
+// you can debug a failing match by swapping match<P>(args...) for
+// error_info<P>(args...) / error_message<P>(args...) without touching
+// the call.
+NOTRE_EXPORT template <NOTRE_PATTERN_INPUT pattern, typename... Subject>
+constexpr error_info_t error_info(const Subject &...) noexcept {
 	using probe = detail::parse_probe<pattern>;
 	error_info_t e{};
 	if (!probe::ok) {
@@ -237,8 +242,10 @@ NOTRE_EXPORT template <NOTRE_PATTERN_INPUT pattern> constexpr error_info_t error
 }
 
 // the rendered diagnostic - position, line/column, and the pattern with
-// a caret - as a static string ("" when the pattern is valid)
-NOTRE_EXPORT template <NOTRE_PATTERN_INPUT pattern> constexpr std::string_view error_message() noexcept {
+// a caret - as a static string ("" when the pattern is valid). Any
+// arguments are ignored (see error_info above).
+NOTRE_EXPORT template <NOTRE_PATTERN_INPUT pattern, typename... Subject>
+constexpr std::string_view error_message(const Subject &...) noexcept {
 	if constexpr (detail::parse_probe<pattern>::ok) {
 		return std::string_view{};
 	} else {

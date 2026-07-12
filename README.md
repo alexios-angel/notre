@@ -144,10 +144,13 @@ constexpr auto why = notre::error_message<"a(b|c">();
 ```
 
 `error_message()` renders into static storage, so you can
-`static_assert` it, print it, or surface it in your own tooling. Define
-`NOTRE_VERBOSE_ERRORS` and a failed `match<>()` also puts the position,
-line and column straight into the compiler's backtrace
-(`verbose_regex_error<5, 1, 6>`), no query needed.
+`static_assert` it, print it, or surface it in your own tooling. It and
+`error_info()` **ignore any call arguments**, so you can debug a failing
+call by changing only the function name — `notre::match<P>(subject)`
+becomes `notre::error_message<P>(subject)` — without editing the
+arguments. Define `NOTRE_VERBOSE_ERRORS` and a failed `match<>()` also
+puts the position, line and column straight into the compiler's
+backtrace (`verbose_regex_error<5, 1, 6>`), no query needed.
 
 **What did my pattern actually compile to?** The single most useful
 thing when a regex does not behave the way you read it is to see the
