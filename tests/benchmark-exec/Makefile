@@ -5,16 +5,16 @@ FILE := input.txt
 
 PATTERN_HASH := $(shell echo "$(PATTERN)" | /sbin/md5)
 
-LIBRARIES := $(sort baseline boost ctre pcre pcre-jit re2 std xpressive srell)
+LIBRARIES := $(sort baseline boost notre pcre pcre-jit re2 std xpressive srell)
 
 default: all
 
 CXXFLAGS := -std=c++2a -I../../include -Isrell_include
 LDFLAGS :=
 
-ctre_CXXFLAGS := 
-ctre_LDFLAGS := 
-ctre_NAME := CTRE
+notre_CXXFLAGS := 
+notre_LDFLAGS := 
+notre_NAME := NOTRE
 
 boost_CXXFLAGS := 
 boost_LDFLAGS := -lboost_regex

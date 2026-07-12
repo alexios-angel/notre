@@ -51,7 +51,7 @@ template <typename> inline constexpr bool always_false_v = false;
 // A general purpose compile-time string.
 //
 // The content is stored as UTF-32 code points: construction from char8_t
-// (and, with CTRE_STRING_IS_UTF8, from char) decodes UTF-8, construction
+// (and, with NOTRE_STRING_IS_UTF8, from char) decodes UTF-8, construction
 // from char16_t decodes UTF-16, and wchar_t/char32_t units are taken as
 // code points. `N` is the capacity in input code units; `size()` is the
 // decoded length, which can be smaller. A malformed encoding doesn't fail
@@ -76,7 +76,7 @@ CTLL_EXPORT template <size_t N> struct fixed_string {
 
 	template <typename T> constexpr fixed_string(construct_from_pointer_t, const T * input) noexcept {
 		if constexpr (std::is_same_v<T, char>) {
-			#ifdef CTRE_STRING_IS_UTF8
+			#ifdef NOTRE_STRING_IS_UTF8
 				size_t out{0};
 				for (size_t i{0}; i < N; ++i) {
 					length_value_t info = length_and_value_of_utf8_code_point(input[i]);

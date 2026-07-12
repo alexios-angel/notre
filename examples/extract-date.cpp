@@ -6,7 +6,7 @@
 //
 // Build: make extract-date
 
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 #include <optional>
 #include <string_view>
@@ -20,7 +20,7 @@ struct date {
 };
 
 constexpr std::optional<date> extract_date(std::string_view s) noexcept {
-	if (auto [whole, year, month, day] = ctre::match<"(\\d{4})/(\\d{1,2})/(\\d{1,2})">(s); whole) {
+	if (auto [whole, year, month, day] = notre::match<"(\\d{4})/(\\d{1,2})/(\\d{1,2})">(s); whole) {
 		return date{year, month, day};
 	} else {
 		return std::nullopt;

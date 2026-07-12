@@ -1,10 +1,10 @@
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 
 static constexpr auto pattern = ctll::fixed_string("([a-z]++),([a-z]++),([a-z]++),([a-z]++),([a-z]++)");
 
 size_t total_size(std::string_view subject) {
-	auto result = ctre::match<pattern>(subject);
+	auto result = notre::match<pattern>(subject);
 	
 	if (not result) return 0;
 	

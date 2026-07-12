@@ -1,16 +1,16 @@
 // Iterating over every match in an input.
 //
-// ctre::search_all returns a lazy range of regex_results — matching
+// notre::search_all returns a lazy range of regex_results — matching
 // happens as you iterate. It also composes with a pipe syntax, works
 // with explicit iterator/sentinel pairs, and a range of *subjects* can
-// be piped through a scalar function like ctre::match to classify many
+// be piped through a scalar function like notre::match to classify many
 // strings at once.
 //
-// (ctre::range is a deprecated alias of ctre::search_all.)
+// (notre::range is a deprecated alias of notre::search_all.)
 //
 // Build: make search-all
 
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 #include <string_view>
 #include <vector>
@@ -22,21 +22,21 @@ int main() {
 
 	// plain loop over every occurrence
 	std::cout << "measurements:";
-	for (auto m : ctre::search_all<"([0-9]+)(mm|cm|um)">(input)) {
+	for (auto m : notre::search_all<"([0-9]+)(mm|cm|um)">(input)) {
 		std::cout << " " << m.to_view();
 	}
 	std::cout << "\n";
 
 	// same thing, pipe style; captures work as usual
 	int sum = 0;
-	for (auto m : input | ctre::search_all<"[0-9]+">) {
+	for (auto m : input | notre::search_all<"[0-9]+">) {
 		sum += m.to_number<int>();
 	}
 	std::cout << "sum of all numbers: " << sum << "\n";
 
 	// explicit iterator / sentinel form
 	std::size_t count = 0;
-	for (auto it = ctre::iterator<"[0-9]+">(input); it != ctre::sentinel; ++it) {
+	for (auto it = notre::iterator<"[0-9]+">(input); it != notre::sentinel; ++it) {
 		++count;
 	}
 	std::cout << "number count: " << count << "\n";
@@ -45,7 +45,7 @@ int main() {
 	// result per subject:
 	std::vector<std::string_view> lines = {"alpha"sv, "1234"sv, "beta"sv};
 	std::cout << "words:";
-	for (auto m : lines | ctre::match<"[a-z]+">) {
+	for (auto m : lines | notre::match<"[a-z]+">) {
 		if (m) std::cout << " " << m.to_view();
 	}
 	std::cout << "\n";

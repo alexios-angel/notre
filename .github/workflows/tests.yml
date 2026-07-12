@@ -30,7 +30,7 @@ jobs:
       - run: c++ -v
       - run: make CXX=c++ CXX_STANDARD=2a
         if: ${{ matrix.standard == '20' }}
-      - run: make CXX=c++ CXX_STANDARD=17 CXXFLAGS=-DCTRE_ENABLE_LITERALS PEDANTIC=""
+      - run: make CXX=c++ CXX_STANDARD=17 CXXFLAGS=-DNOTRE_ENABLE_LITERALS PEDANTIC=""
         if: ${{ matrix.standard == '17' }}
   clang:
     strategy:
@@ -94,6 +94,6 @@ jobs:
         run: choco install ninja cmake
       - uses: actions/checkout@v2
       - name: "Configure"
-        run: cmake . -G Ninja -B build -DCTRE_BUILD_TESTS=ON -DCTRE_CXX_STANDARD=20
+        run: cmake . -G Ninja -B build -DNOTRE_BUILD_TESTS=ON -DNOTRE_CXX_STANDARD=20
       - name: "Build"
-        run: cmake --build build --target ctre-test --verbose
+        run: cmake --build build --target notre-test --verbose

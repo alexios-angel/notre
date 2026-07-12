@@ -1,7 +1,7 @@
-#include <ctre.hpp>
+#include <notre.hpp>
 
 using namespace std::string_view_literals;
-using namespace ctre::literals;
+using namespace notre::literals;
 
 static_assert("^([a-z]++[0123456789ABCDE]+?x[a-z]++)+"_pcre.match("aaaa0000000000000xbbbbb"sv));
 static_assert("^([a-z]++[0123456789ABCDy]+?x[a-z]++)+"_pcre.match("aaaa0000000000000xbbbbb"sv));

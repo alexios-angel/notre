@@ -4,7 +4,7 @@
 #include <string_view>
 #endif
 
-#ifndef CTRE_UNICODE_SYNOPSYS_WAS_INCLUDED
+#ifndef NOTRE_UNICODE_SYNOPSYS_WAS_INCLUDED
 namespace uni {
 enum class category;
 enum class property;
@@ -9500,7 +9500,7 @@ namespace tables {
 }
 }    // namespace uni::detail
 
-// More regex support for ctre
+// More regex support for notre
 
 namespace uni::detail {
 

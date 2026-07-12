@@ -12,25 +12,25 @@
 //
 // Build: make subroutines
 
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 #include <string_view>
 
 using namespace std::literals;
 
 // call by number: the same pattern matched twice, not the same text
-static_assert(ctre::match<"([ab]c)(?1)">("acbc"sv));   // "ac" then "bc"
-static_assert(!ctre::match<"([ab]c)\\g{1}">("acbc"sv)); // backreference: text must repeat
+static_assert(notre::match<"([ab]c)(?1)">("acbc"sv));   // "ac" then "bc"
+static_assert(!notre::match<"([ab]c)\\g{1}">("acbc"sv)); // backreference: text must repeat
 
 // captures set inside a call revert when it returns (calls do not capture)
-static_assert(ctre::match<"([ab]c)(?1)">("acbc"sv).get<1>() == "ac"sv);
+static_assert(notre::match<"([ab]c)(?1)">("acbc"sv).get<1>() == "ac"sv);
 
 // calls are atomic, like PCRE: no backtracking into a finished call
-static_assert(ctre::match<"(a|ab)z(?1)c">("azac"sv));
-static_assert(!ctre::match<"(a|ab)z(?1)c">("azabc"sv));
+static_assert(notre::match<"(a|ab)z(?1)c">("azac"sv));
+static_assert(!notre::match<"(a|ab)z(?1)c">("azabc"sv));
 
 // a DEFINE library: named building blocks, used by calling them
-constexpr auto is_date = ctre::match<
+constexpr auto is_date = notre::match<
 	"(?(DEFINE)"
 		"(?<d2>[0-9][0-9])"
 		"(?<d4>(?&d2)(?&d2))"   // definitions can call each other
@@ -42,12 +42,12 @@ static_assert(!is_date("26-07-10"sv));
 
 int main() {
 	std::cout << std::boolalpha;
-	std::cout << "([ab]c)(?1) on 'acbc':      " << bool(ctre::match<"([ab]c)(?1)">("acbc"sv)) << "\n";
-	std::cout << "([ab]c)\\g{1} on 'acbc':     " << bool(ctre::match<"([ab]c)\\g{1}">("acbc"sv)) << " (backreference needs repeated text)\n";
+	std::cout << "([ab]c)(?1) on 'acbc':      " << bool(notre::match<"([ab]c)(?1)">("acbc"sv)) << "\n";
+	std::cout << "([ab]c)\\g{1} on 'acbc':     " << bool(notre::match<"([ab]c)\\g{1}">("acbc"sv)) << " (backreference needs repeated text)\n";
 	std::cout << "is_date('2026-07-10'):      " << bool(is_date("2026-07-10"sv)) << "\n";
 	std::cout << "is_date('2026-7-10'):       " << bool(is_date("2026-7-10"sv)) << "\n";
 
 	// named call, all four syntaxes
-	std::cout << "(?<w>ab)(?&w) on 'abab':    " << bool(ctre::match<"(?<w>ab)(?&w)">("abab"sv)) << "\n";
-	std::cout << "(?<w>ab)\\g<w> on 'abab':    " << bool(ctre::match<"(?<w>ab)\\g<w>">("abab"sv)) << "\n";
+	std::cout << "(?<w>ab)(?&w) on 'abab':    " << bool(notre::match<"(?<w>ab)(?&w)">("abab"sv)) << "\n";
+	std::cout << "(?<w>ab)\\g<w> on 'abab':    " << bool(notre::match<"(?<w>ab)\\g<w>">("abab"sv)) << "\n";
 }

@@ -7,7 +7,7 @@
 //
 // Build: make conditionals
 
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 #include <optional>
 #include <string_view>
@@ -15,19 +15,19 @@
 using namespace std::literals;
 
 // the classic: a value that is quoted only if it starts with a quote
-constexpr auto quoted_or_bare = ctre::match<"(\")?(?(1)[^\"]*\"|[a-z]+)">;
+constexpr auto quoted_or_bare = notre::match<"(\")?(?(1)[^\"]*\"|[a-z]+)">;
 
 static_assert(quoted_or_bare("\"hello world\""sv));
 static_assert(quoted_or_bare("hello"sv));
 static_assert(!quoted_or_bare("\"unterminated"sv)); // quote seen -> closing quote required
 
 // assertion condition: pick the branch by lookahead
-static_assert(ctre::match<"(?(?=ab)a.|b.)">("ab"sv));
-static_assert(ctre::match<"(?(?=ab)a.|b.)">("bx"sv));
+static_assert(notre::match<"(?(?=ab)a.|b.)">("ab"sv));
+static_assert(notre::match<"(?(?=ab)a.|b.)">("bx"sv));
 
 // captures inside branches are real captures
 constexpr std::optional<char> which_branch(std::string_view s) {
-	if (auto m = ctre::match<"(a)?(?(1)(x)|(y))">(s)) {
+	if (auto m = notre::match<"(a)?(?(1)(x)|(y))">(s)) {
 		if (m.get<2>()) return 'x';
 		if (m.get<3>()) return 'y';
 	}
@@ -43,7 +43,7 @@ int main() {
 	}
 
 	// optional area code, but if present it must be followed by a dash
-	constexpr auto phone = ctre::match<"([0-9]{3})?(?(1)-)[0-9]{3}-[0-9]{4}">;
+	constexpr auto phone = notre::match<"([0-9]{3})?(?(1)-)[0-9]{3}-[0-9]{4}">;
 	std::cout << "phone '555-123-4567':  " << bool(phone("555-123-4567"sv)) << "\n";
 	std::cout << "phone '123-4567':      " << bool(phone("123-4567"sv)) << "\n";
 	std::cout << "phone '555123-4567':   " << bool(phone("555123-4567"sv)) << "\n";

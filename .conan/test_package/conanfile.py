@@ -15,6 +15,6 @@ class TestPackageConan(ConanFile):
         cmake.build()
 
     def test(self):
-        assert os.path.exists(os.path.join(self.deps_cpp_info["CTRE"].rootpath, "licenses", "LICENSE"))
+        assert os.path.exists(os.path.join(self.deps_cpp_info["NOTRE"].rootpath, "licenses", "LICENSE"))
         bin_path = os.path.join("bin", "test_package")
         self.run(bin_path, run_environment=True)

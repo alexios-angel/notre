@@ -9,7 +9,7 @@
 //
 // Build: make named-captures
 
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 #include <string_view>
 
@@ -18,7 +18,7 @@ using namespace std::literals;
 int main() {
 	constexpr auto url = "https://compile-time.re:443/index.html"sv;
 
-	if (auto m = ctre::match<"(?<scheme>[a-z]+)://(?<host>[^:/]+)(?::(?<port>[0-9]+))?(?<path>/.*)?">(url)) {
+	if (auto m = notre::match<"(?<scheme>[a-z]+)://(?<host>[^:/]+)(?::(?<port>[0-9]+))?(?<path>/.*)?">(url)) {
 		std::cout << "scheme: " << m.get<"scheme">() << "\n";
 		std::cout << "host:   " << m.get<"host">() << "\n";
 
@@ -36,6 +36,6 @@ int main() {
 	// all three declaration syntaxes are equivalent, and \g{name}
 	// backreferences work with any of them
 	std::cout << std::boolalpha;
-	std::cout << "(?P<w>ab) matches:      " << bool(ctre::match<"(?P<w>ab)">("ab"sv)) << "\n";
-	std::cout << "(?'w'ab)\\g{w} on abab:  " << bool(ctre::match<"(?'w'ab)\\g{w}">("abab"sv)) << "\n";
+	std::cout << "(?P<w>ab) matches:      " << bool(notre::match<"(?P<w>ab)">("ab"sv)) << "\n";
+	std::cout << "(?'w'ab)\\g{w} on abab:  " << bool(notre::match<"(?'w'ab)\\g{w}">("abab"sv)) << "\n";
 }

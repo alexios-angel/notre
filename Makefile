@@ -1,4 +1,4 @@
-.PHONY: default all clean grammar compare single-header single-header/ctre.hpp single-header/ctre-unicode.hpp single-header/unicode-db.hpp pch
+.PHONY: default all clean grammar compare single-header single-header/notre.hpp single-header/notre-unicode.hpp single-header/unicode-db.hpp pch
 
 default: all
 	
@@ -18,13 +18,13 @@ PEDANTIC:=-pedantic
 
 override CXXFLAGS := $(CXXFLAGS) -std=c++$(CXX_STANDARD) -Iinclude -O3 $(PEDANTIC) -Wall -Wextra -Werror -Wconversion
 
-# precompiled header: ctre.hpp is parsed once instead of once per test
+# precompiled header: notre.hpp is parsed once instead of once per test
 CXX_IS_CLANG := $(shell $(CXX) --version 2>/dev/null | grep -qi clang && echo yes)
 ifeq ($(CXX_IS_CLANG),yes)
-PCH := ctre.pch
+PCH := notre.pch
 PCH_USE = -include-pch $(PCH)
 else
-PCH := include/ctre.hpp.gch
+PCH := include/notre.hpp.gch
 PCH_USE =
 endif
 LDFLAGS := 
@@ -49,7 +49,7 @@ $(OBJECTS): %.o: %.cpp $(PCH)
 
 pch: $(PCH)
 
-$(PCH): include/ctre.hpp
+$(PCH): include/notre.hpp
 	$(CXX) $(CXXFLAGS) -x c++-header $< -o $@
 
 -include $(DEPEDENCY_FILES)
@@ -62,17 +62,17 @@ benchmark-clean:
 	@$(MAKE) IGNORE="" clean
 
 clean:
-	rm -f $(TRUE_TARGETS) $(OBJECTS) $(DEPEDENCY_FILES) mtent12.txt mtent12.zip ctre.pch include/ctre.hpp.gch
+	rm -f $(TRUE_TARGETS) $(OBJECTS) $(DEPEDENCY_FILES) mtent12.txt mtent12.zip notre.pch include/notre.hpp.gch
 	
-grammar: include/ctre/pcre.hpp
+grammar: include/notre/pcre.hpp
 	
 regrammar: 
-	@rm -f include/ctre/pcre.hpp
+	@rm -f include/notre/pcre.hpp
 	@$(MAKE) grammar
 	
-include/ctre/pcre.hpp: include/ctre/pcre.gram
+include/notre/pcre.hpp: include/notre/pcre.gram
 	@echo "LL1q $<"
-	@$(TABLEWRIGHT) --ll --q --input=include/ctre/pcre.gram --output=include/ctre/ --generator=cpp_ctll_v2  --cfg:fname=pcre.hpp --cfg:namespace=ctre --cfg:guard=CTRE__PCRE__HPP --cfg:grammar_name=pcre
+	@$(TABLEWRIGHT) --ll --q --input=include/notre/pcre.gram --output=include/notre/ --generator=cpp_ctll_v2  --cfg:fname=pcre.hpp --cfg:namespace=notre --cfg:guard=NOTRE__PCRE__HPP --cfg:grammar_name=pcre
 	
 mtent12.zip:
 	curl -s http://www.gutenberg.org/files/3200/old/mtent12.zip -o mtent12.zip
@@ -81,26 +81,26 @@ mtent12.txt: mtent12.zip
 	unzip -o mtent12.zip
 	touch mtent12.txt
 
-single-header: single-header/ctre.hpp single-header/ctre-unicode.hpp single-header/unicode-db.hpp
+single-header: single-header/notre.hpp single-header/notre-unicode.hpp single-header/unicode-db.hpp
 
 single-header/unicode-db.hpp: include/unicode-db/unicode-db.hpp
 	cp $+ $@
 
-single-header/ctre.hpp:
-	${PYTHON} -m quom include/ctre.hpp ctre.hpp.tmp
-	echo "/*" > single-header/ctre.hpp
-	cat LICENSE >> single-header/ctre.hpp
-	echo "*/" >> single-header/ctre.hpp
-	cat ctre.hpp.tmp >> single-header/ctre.hpp
-	rm ctre.hpp.tmp
+single-header/notre.hpp:
+	${PYTHON} -m quom include/notre.hpp notre.hpp.tmp
+	echo "/*" > single-header/notre.hpp
+	cat LICENSE >> single-header/notre.hpp
+	echo "*/" >> single-header/notre.hpp
+	cat notre.hpp.tmp >> single-header/notre.hpp
+	rm notre.hpp.tmp
 
-single-header/ctre-unicode.hpp:
-	${PYTHON} -m quom include/ctre-unicode.hpp ctre-unicode.hpp.tmp
-	echo "/*" > single-header/ctre-unicode.hpp
-	cat LICENSE >> single-header/ctre-unicode.hpp
-	echo "*/" >> single-header/ctre-unicode.hpp
-	cat ctre-unicode.hpp.tmp >> single-header/ctre-unicode.hpp
-	rm ctre-unicode.hpp.tmp
+single-header/notre-unicode.hpp:
+	${PYTHON} -m quom include/notre-unicode.hpp notre-unicode.hpp.tmp
+	echo "/*" > single-header/notre-unicode.hpp
+	cat LICENSE >> single-header/notre-unicode.hpp
+	echo "*/" >> single-header/notre-unicode.hpp
+	cat notre-unicode.hpp.tmp >> single-header/notre-unicode.hpp
+	rm notre-unicode.hpp.tmp
 	
 REPEAT:=10
 

@@ -1,4 +1,4 @@
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 
 static constexpr auto pattern = ctll::fixed_string("(?<first>[0-9])[0-9]++");
@@ -7,7 +7,7 @@ int main() {
 	using namespace std::string_view_literals;
 	auto input = "123,456,768"sv;
 	
-	for (auto match: ctre::search_all<pattern>(input)) {
+	for (auto match: notre::search_all<pattern>(input)) {
 		
 		if (match == "456") std::cout << "bingo: ";
 		if (match != "768") std::cout << "bad: ";

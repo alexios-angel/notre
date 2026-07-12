@@ -10,10 +10,10 @@ API
     static constexpr auto pattern = ctll::fixed_string{ "h.*" };
   
     constexpr auto match(std::string_view sv) noexcept {
-    	return ctre::match<pattern>(sv);
+    	return notre::match<pattern>(sv);
     }
 
-.. class:: template<class Iterator, class... Captures> ctre::regex_results
+.. class:: template<class Iterator, class... Captures> notre::regex_results
 
   .. type:: char_type = typename std::iterator_traits<Iterator>::value_type
 
@@ -28,7 +28,7 @@ API
 
     Example: ::
 
-      if (auto m = ctre::match<"(?<chars>[a-z]+)([0-9]+)">("abc123")) {
+      if (auto m = notre::match<"(?<chars>[a-z]+)([0-9]+)">("abc123")) {
         m.get<"chars">(); //abc
         m.get<2>(); //123
       }
@@ -86,14 +86,14 @@ API
 
         Returns ``Id``
 
-.. function:: template<auto & RE, class... Args> constexpr ctre::regex_results<deduced> match(Args&&... args)
-              template<ctll::fixed_string RE, class... Args> constexpr ctre::regex_results<deduced> match(Args&&... args)
+.. function:: template<auto & RE, class... Args> constexpr notre::regex_results<deduced> match(Args&&... args)
+              template<ctll::fixed_string RE, class... Args> constexpr notre::regex_results<deduced> match(Args&&... args)
 
   Matches ``RE`` against the whole input.
   ``Args...`` must be either a string-like object with ``begin`` and ``end`` member functions, or a pair of forward iterators. 
 
-.. function:: template<auto & RE, class... Args> constexpr ctre::regex_results<deduced> search(Args&&... args)
-              template<ctll::fixed_string RE, class... Args>  constexpr ctre::regex_results<deduced> search(Args&&... args)
+.. function:: template<auto & RE, class... Args> constexpr notre::regex_results<deduced> search(Args&&... args)
+              template<ctll::fixed_string RE, class... Args>  constexpr notre::regex_results<deduced> search(Args&&... args)
 
   Searches for a match somewhere within the input.
   ``Args...`` must be either a string-like object with ``begin`` and ``end`` member functions, or a pair of forward iterators.

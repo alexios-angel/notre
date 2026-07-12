@@ -1,7 +1,7 @@
 #include "load-file.hpp"
 #include <iostream>
 #include <chrono>
-#include "ctre.hpp"
+#include "notre.hpp"
 #include <boost/regex.hpp>
 #include <regex>
 #include <re2/re2.h>
@@ -14,7 +14,7 @@
 #define PATTERN "([[:alpha:]]+ing)"
 #endif
 
-#define PATTERN_CTRE 
+#define PATTERN_NOTRE 
 
 std::pair<std::chrono::nanoseconds, std::chrono::nanoseconds> calculate_diff(const std::vector<std::chrono::nanoseconds> & in) {
 	std::chrono::nanoseconds sum = std::accumulate(in.begin(), in.end(), std::chrono::nanoseconds{});
@@ -34,11 +34,11 @@ std::pair<std::chrono::nanoseconds, std::chrono::nanoseconds> calculate_diff(con
 	return {avg, std::chrono::nanoseconds{std_diff}};
 }
 
-static constexpr inline auto ctre_pattern = ctll::fixed_string{PATTERN};
+static constexpr inline auto notre_pattern = ctll::fixed_string{PATTERN};
 
 int main(int argc, char ** argv) {
 	const char * fname = "mtent12.txt";
-	std::string_view type = "ctre";
+	std::string_view type = "notre";
 	unsigned repeat = 10;
 	
 	if (argc >= 4) {
@@ -80,9 +80,9 @@ int main(int argc, char ** argv) {
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 	};
 	
-	auto ctre_benchmark = [&]{
+	auto notre_benchmark = [&]{
 		
-		for (const auto m: ctre::range(file.c_str(), ctre::re<ctre_pattern>())) {
+		for (const auto m: notre::range(file.c_str(), notre::re<notre_pattern>())) {
 			++matches;
 			//std::cout << std::string_view(m) << "\n";
 		}
@@ -115,8 +115,8 @@ int main(int argc, char ** argv) {
 	
 	auto start = std::chrono::high_resolution_clock::now();
 	if (type == "all"sv) {
-		std::vector<std::chrono::nanoseconds> duration_ctre{};
-		unsigned matches_ctre{0};
+		std::vector<std::chrono::nanoseconds> duration_notre{};
+		unsigned matches_notre{0};
 		std::vector<std::chrono::nanoseconds> duration_boost{};
 		unsigned matches_boost{0};
 		std::vector<std::chrono::nanoseconds> duration_std{};
@@ -130,8 +130,8 @@ int main(int argc, char ** argv) {
 		
 		for (unsigned int i{0}; i != count; ++i) {
 			matches = 0;
-			duration_ctre.push_back(measure(ctre_benchmark));
-			matches_ctre += matches;
+			duration_notre.push_back(measure(notre_benchmark));
+			matches_notre += matches;
 			
 			matches = 0;
 			duration_boost.push_back(measure(boost_benchmark));
@@ -145,18 +145,18 @@ int main(int argc, char ** argv) {
 			duration_re2.push_back(measure(re2_benchmark));
 			matches_re2 += matches;
 			
-			if (matches_ctre != matches_boost) {
-				std::cout << "different output! (ctre <> boost)\n";
+			if (matches_notre != matches_boost) {
+				std::cout << "different output! (notre <> boost)\n";
 				return 1;
 			}
 			
-			if (matches_ctre != matches_std) {
-				std::cout << "different output! (ctre <> std)\n";
+			if (matches_notre != matches_std) {
+				std::cout << "different output! (notre <> std)\n";
 				return 1;
 			}
 			
-			if (matches_ctre != matches_re2) {
-				std::cout << "different output! (ctre <> re2)\n";
+			if (matches_notre != matches_re2) {
+				std::cout << "different output! (notre <> re2)\n";
 				return 1;
 			}
 			
@@ -171,14 +171,14 @@ int main(int argc, char ** argv) {
 			std::cout << (stddiff.count() / 1'000'000.0f) << " ms)\n";
 		};
 		
-		print("ctre ",duration_ctre);
+		print("notre ",duration_notre);
 		print("boost",duration_boost);
 		print("std  ",duration_std);
 		print("re2  ",duration_re2);
 		return 0;
 		
-	} else if (type == "ctre"sv) {
-		duration = measure(ctre_benchmark);
+	} else if (type == "notre"sv) {
+		duration = measure(notre_benchmark);
 	} else if (type == "boost"sv) {
 		duration = measure(boost_benchmark);
 	} else if (type == "std"sv) {
@@ -193,7 +193,7 @@ int main(int argc, char ** argv) {
 	auto end = std::chrono::high_resolution_clock::now();
 	auto diff = end - start;
 	std::cerr << "matches = " << matches << "\n";
-	if (type == "ctre"sv) {
+	if (type == "notre"sv) {
 		std::cerr << "init = null\n";
 	} else {
 		double init = 0.0;

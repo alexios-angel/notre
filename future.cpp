@@ -1,9 +1,9 @@
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <optional>
 #include <iostream>
 
 std::string match(std::string_view sv) {
-	if (auto match = ctre::match<"[a-z]+">(sv); match) {
+	if (auto match = notre::match<"[a-z]+">(sv); match) {
 		return match.to_string();
 	} else {
 		return "not_match";

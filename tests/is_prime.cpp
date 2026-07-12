@@ -1,9 +1,9 @@
-#include <ctre.hpp>
+#include <notre.hpp>
 
 static constexpr auto pattern = ctll::fixed_string(".?|(..+?)\\g{1}+");
 
 constexpr bool is_prime(std::string_view input) {
-	return !ctre::match<pattern>(input);
+	return !notre::match<pattern>(input);
 }
 
 int main()

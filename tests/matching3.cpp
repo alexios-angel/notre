@@ -1,31 +1,31 @@
-#include <ctre-unicode.hpp>
+#include <notre-unicode.hpp>
 #include <string_view>
 
 void empty_symbol() { }
 
-using namespace ctre::literals;
-using namespace ctre::test_literals;
+using namespace notre::literals;
+using namespace notre::test_literals;
 using namespace std::string_view_literals;
 
-#if CTRE_CNTTP_COMPILER_CHECK
+#if NOTRE_CNTTP_COMPILER_CHECK
 
-#define TEST_MATCH(id, pattern, subject) static_assert(ctre::match<pattern>(subject))
+#define TEST_MATCH(id, pattern, subject) static_assert(notre::match<pattern>(subject))
 
-#define TEST_SEARCH(id, pattern, subject) static_assert(ctre::search<pattern>(subject))
+#define TEST_SEARCH(id, pattern, subject) static_assert(notre::search<pattern>(subject))
 
-#define TEST_NOT_MATCH(id, pattern, subject) static_assert(!ctre::match<pattern>(subject))
+#define TEST_NOT_MATCH(id, pattern, subject) static_assert(!notre::match<pattern>(subject))
 
-#define TEST_NOT_SEARCH(id, pattern, subject) static_assert(!ctre::search<pattern>(subject))
+#define TEST_NOT_SEARCH(id, pattern, subject) static_assert(!notre::search<pattern>(subject))
 
 #else
 
-#define TEST_MATCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(ctre::re<_ptn ## id>().match(subject))
+#define TEST_MATCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(notre::re<_ptn ## id>().match(subject))
 
-#define TEST_SEARCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(ctre::re<_ptn ## id>().search(subject))
+#define TEST_SEARCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(notre::re<_ptn ## id>().search(subject))
 
-#define TEST_NOT_MATCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(!ctre::re<_ptn ## id>().match(subject))
+#define TEST_NOT_MATCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(!notre::re<_ptn ## id>().match(subject))
 
-#define TEST_NOT_SEARCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(!ctre::re<_ptn ## id>().search(subject))
+#define TEST_NOT_SEARCH(id, pattern, subject) static constexpr inline auto _ptn ## id = ctll::fixed_string(pattern); static_assert(!notre::re<_ptn ## id>().search(subject))
 #endif
 
 TEST_MATCH(1, "blabla","blabla");
@@ -302,12 +302,12 @@ TEST_MATCH(281, "(a)((?1)b)(?2)", "aabab"); // chained calls
 TEST_MATCH(282, "a&b", "a&b"); // literal ampersand still matches
 TEST_MATCH(283, "[&x]+", "x&x");
 
-#if CTRE_CNTTP_COMPILER_CHECK
+#if NOTRE_CNTTP_COMPILER_CHECK
 // captures set inside a subroutine call revert (the call is non-capturing)
-static_assert(ctre::match<"([ab]c)(?1)">("acbc"sv).get<1>() == "ac"sv);
-static_assert(ctre::match<"((a)(b))(?1)">("abab"sv).get<2>() == "a"sv);
-static_assert(ctre::match<"((a)(b))(?1)">("abab"sv).get<3>() == "b"sv);
-static_assert(ctre::match<"((?<in>a))(?1)">("aa"sv).get<"in">() == "a"sv);
+static_assert(notre::match<"([ab]c)(?1)">("acbc"sv).get<1>() == "ac"sv);
+static_assert(notre::match<"((a)(b))(?1)">("abab"sv).get<2>() == "a"sv);
+static_assert(notre::match<"((a)(b))(?1)">("abab"sv).get<3>() == "b"sv);
+static_assert(notre::match<"((?<in>a))(?1)">("aa"sv).get<"in">() == "a"sv);
 #endif
 
 // match point reset \K: prefix is required but excluded from the match
@@ -319,15 +319,15 @@ TEST_MATCH(288, "\\Kabc", "abc");
 TEST_MATCH(289, "(?:a\\K)+b", "aaab");
 TEST_MATCH(290, "(x\\Ky)z(?1)", "xyzxy"); // \K inside a called group
 
-#if CTRE_CNTTP_COMPILER_CHECK
+#if NOTRE_CNTTP_COMPILER_CHECK
 // the reported match starts at the point of the (last executed) \K
-static_assert(ctre::search<"foo\\Kbar">("xxfoobarxx"sv).to_view() == "bar"sv);
-static_assert(ctre::match<"a\\Kb\\Kc">("abc"sv).to_view() == "c"sv);
-static_assert(ctre::match<"(a)\\K(b)">("ab"sv).to_view() == "b"sv);
-static_assert(ctre::match<"(a)\\K(b)">("ab"sv).get<1>() == "a"sv); // captures before \K survive
-static_assert(ctre::match<"(?:a\\Kb|cd)">("cd"sv).to_view() == "cd"sv); // only the taken path applies
-static_assert(ctre::search<"[0-9]+\\K[a-z]+">("123abc"sv).to_view() == "abc"sv);
-static_assert(ctre::match<"abc\\K">("abc"sv).to_view().empty());
+static_assert(notre::search<"foo\\Kbar">("xxfoobarxx"sv).to_view() == "bar"sv);
+static_assert(notre::match<"a\\Kb\\Kc">("abc"sv).to_view() == "c"sv);
+static_assert(notre::match<"(a)\\K(b)">("ab"sv).to_view() == "b"sv);
+static_assert(notre::match<"(a)\\K(b)">("ab"sv).get<1>() == "a"sv); // captures before \K survive
+static_assert(notre::match<"(?:a\\Kb|cd)">("cd"sv).to_view() == "cd"sv); // only the taken path applies
+static_assert(notre::search<"[0-9]+\\K[a-z]+">("123abc"sv).to_view() == "abc"sv);
+static_assert(notre::match<"abc\\K">("abc"sv).to_view().empty());
 #endif
 
 // conditional patterns (?(condition)yes|no)
@@ -355,13 +355,13 @@ TEST_MATCH(311, "(\")?(?(1)[^\"]*\"|[a-z]+)", "\"hi there\""); // quoted-or-bare
 TEST_MATCH(312, "(\")?(?(1)[^\"]*\"|[a-z]+)", "hi");
 TEST_NOT_MATCH(313, "(\")?(?(1)[^\"]*\"|[a-z]+)", "\"unterminated");
 
-#if CTRE_CNTTP_COMPILER_CHECK
+#if NOTRE_CNTTP_COMPILER_CHECK
 // captures inside conditional branches are real
-static_assert(ctre::match<"(a)?(?(1)(x)|(y))">("ax"sv).get<2>() == "x"sv);
-static_assert(ctre::match<"(a)?(?(1)(x)|(y))">("y"sv).get<3>() == "y"sv);
+static_assert(notre::match<"(a)?(?(1)(x)|(y))">("ax"sv).get<2>() == "x"sv);
+static_assert(notre::match<"(a)?(?(1)(x)|(y))">("y"sv).get<3>() == "y"sv);
 // a conditional inlined by a subroutine call still reads the original group
-static_assert(ctre::match<"(a)?((?(1)x|y))z(?2)">("axzx"sv));
-static_assert(ctre::match<"(a)?((?(1)x|y))z(?2)">("yzy"sv));
+static_assert(notre::match<"(a)?((?(1)x|y))z(?2)">("axzx"sv));
+static_assert(notre::match<"(a)?((?(1)x|y))z(?2)">("yzy"sv));
 #endif
 
 // octal escapes: \o{ddd...} and \0 with up to two more digits
@@ -385,15 +385,15 @@ TEST_MATCH(328, "[\\cA-\\cZ]+", "\x01\x0a\x1a");
 TEST_NOT_MATCH(329, "\\cA", "\x02");
 TEST_MATCH(330, "abc", "abc"); // literal c is unaffected
 
-#if CTRE_CNTTP_COMPILER_CHECK && defined(__cpp_char8_t)
+#if NOTRE_CNTTP_COMPILER_CHECK && defined(__cpp_char8_t)
 // grapheme cluster \X (atomic \P{M}\p{M}* approximation);
 // "e\u0301" is a decomposed e-acute: two code points, one cluster
-static_assert(ctre::match<"\\X">(u8"a"sv));
-static_assert(ctre::match<"\\X">(u8"e\u0301"sv));
-static_assert(!ctre::match<".">(u8"e\u0301"sv)); // unlike the dot
-static_assert(ctre::match<"\\X\\X">(u8"e\u0301a"sv));
-static_assert(!ctre::match<"\\X">(u8"e\u0301a"sv));
-static_assert(ctre::match<"\\X+">(u8"e\u0301a\u0300u\u0308"sv));
+static_assert(notre::match<"\\X">(u8"a"sv));
+static_assert(notre::match<"\\X">(u8"e\u0301"sv));
+static_assert(!notre::match<".">(u8"e\u0301"sv)); // unlike the dot
+static_assert(notre::match<"\\X\\X">(u8"e\u0301a"sv));
+static_assert(!notre::match<"\\X">(u8"e\u0301a"sv));
+static_assert(notre::match<"\\X+">(u8"e\u0301a\u0300u\u0308"sv));
 #endif
 
 

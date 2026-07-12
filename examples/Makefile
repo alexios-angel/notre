@@ -7,7 +7,7 @@ TARGETS := $(SOURCES:%.cpp=%)
 
 all: $(TARGETS)
 
-# built in C++17 mode on purpose; no -pedantic so the _ctre UDL
+# built in C++17 mode on purpose; no -pedantic so the _notre UDL
 # (a GNU extension) stays available where the compiler offers it
 cxx17-syntax: cxx17-syntax.cpp
 	$(CXX) $(CXX17FLAGS) $< -o $@

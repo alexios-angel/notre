@@ -10,17 +10,17 @@
 
 // An inline callout entry: a compile-time key (a name or a number) paired
 // with a captureless callable, both non-type template parameters. A pack
-// of these goes into ctre::with_callouts to attach implementations to a
+// of these goes into notre::with_callouts to attach implementations to a
 // pattern's (?C...) callouts without writing a handler type:
 //
-//   ctre::match<"a(?C'go')b", ctre::with_callouts<
+//   notre::match<"a(?C'go')b", notre::with_callouts<
 //       ctll::callout<"go", [](const auto & c) { ... }>>>(subject);
-//   ctre::match<"a(?C1)b", ctre::with_callouts<
+//   notre::match<"a(?C1)b", notre::with_callouts<
 //       ctll::callout<1, [](const auto & c) { ... }>>>(subject);
 //
 // A numbered key is normalized to its decimal spelling, so ctll::callout<7,
 // f> serves (?C7) exactly like a "7" key would. Requires C++20 class-type
-// template parameters (the same compiler support as ctre::match<"...">);
+// template parameters (the same compiler support as notre::match<"...">);
 // on older compilers this header is empty and only the handler-type form
 // of with_callouts is available.
 

@@ -8,7 +8,7 @@ static constexpr auto Pattern = ctll::fixed_string{ LR"(^\s*(\d+)\s+:(\S):$(\S+?
 static_assert(Pattern.size() == 38);
 
 // ordinary string is taken as array of bytes
-#ifdef CTRE_STRING_IS_UTF8
+#ifdef NOTRE_STRING_IS_UTF8
 static_assert(ctll::fixed_string("ěšč").size() == 3);
 static_assert(ctll::fixed_string("😍").size() == 1);
 static_assert(ctll::fixed_string("😍")[0] == L'😍');

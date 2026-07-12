@@ -9,14 +9,14 @@ def get_travis_branch():
 
 
 def get_reference():
-    return "CTRE/{}".format(get_travis_branch())
+    return "NOTRE/{}".format(get_travis_branch())
 
 
 if __name__ == "__main__":
     builder = ConanMultiPackager(
         reference=get_reference(),
-        username="ctre",
-        upload="https://api.bintray.com/conan/hanickadot/ctre",
+        username="notre",
+        upload="https://api.bintray.com/conan/hanickadot/notre",
         upload_only_when_stable=True,
         stable_branch_pattern="v?\d+\.\d+.*",
         test_folder=os.path.join(".conan", "test_package"))

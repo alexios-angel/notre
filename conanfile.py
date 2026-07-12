@@ -4,8 +4,8 @@
 from conans import ConanFile
 
 
-class CtreConan(ConanFile):
-    name = "CTRE"
+class NotreConan(ConanFile):
+    name = "NOTRE"
     license = "Apache 2.0 with LLVM Exception"
     url = "https://github.com/hanickadot/compile-time-regular-expressions"
     author = "Hana Dusíková (ctre@hanicka.net)"

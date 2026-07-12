@@ -1,19 +1,19 @@
-#include <ctre.hpp>
+#include <notre.hpp>
 
-#if CTRE_CNTTP_COMPILER_CHECK
+#if NOTRE_CNTTP_COMPILER_CHECK
 
-#define TEST_MATCH(pattern, subject, result) static_assert(ctre::match<pattern, ctre::case_sensitive>(subject) == result)
+#define TEST_MATCH(pattern, subject, result) static_assert(notre::match<pattern, notre::case_sensitive>(subject) == result)
 
-#define TEST_CI_MATCH(pattern, subject, result) static_assert(ctre::match<pattern, ctre::case_insensitive>(subject) == result)
+#define TEST_CI_MATCH(pattern, subject, result) static_assert(notre::match<pattern, notre::case_insensitive>(subject) == result)
 
 #else
 
 #define UNIQUE_ID_HELPER(A,B) A ## B 
 #define UNIQUE_ID(LINE) UNIQUE_ID_HELPER(_ptn, LINE)
 
-#define TEST_MATCH(pattern, subject, result) static constexpr auto UNIQUE_ID(__LINE__) = ctll::fixed_string(pattern); static_assert(ctre::regular_expression<typename ctre::regex_builder<UNIQUE_ID(__LINE__)>::type, ctre::match_method, ctre::case_sensitive>{}(subject) == result)
+#define TEST_MATCH(pattern, subject, result) static constexpr auto UNIQUE_ID(__LINE__) = ctll::fixed_string(pattern); static_assert(notre::regular_expression<typename notre::regex_builder<UNIQUE_ID(__LINE__)>::type, notre::match_method, notre::case_sensitive>{}(subject) == result)
 
-#define TEST_CI_MATCH(pattern, subject, result) static constexpr auto UNIQUE_ID(__LINE__) = ctll::fixed_string(pattern); static_assert(ctre::regular_expression<typename ctre::regex_builder<UNIQUE_ID(__LINE__)>::type, ctre::match_method, ctre::case_insensitive>{}(subject) == result)
+#define TEST_CI_MATCH(pattern, subject, result) static constexpr auto UNIQUE_ID(__LINE__) = ctll::fixed_string(pattern); static_assert(notre::regular_expression<typename notre::regex_builder<UNIQUE_ID(__LINE__)>::type, notre::match_method, notre::case_insensitive>{}(subject) == result)
 
 #endif
 

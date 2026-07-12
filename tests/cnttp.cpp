@@ -1,15 +1,15 @@
 #include <iostream>
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <string_view>
 
 struct name { bool has; std::string_view first, family; };
 
 name extract(std::string_view sv) noexcept {
-	#if CTRE_CNTTP_COMPILER_CHECK
-	if (auto [re,f,l] = ctre::match<"([A-Za-z]+?),([A-Za-z]+?)">(sv); re) {
+	#if NOTRE_CNTTP_COMPILER_CHECK
+	if (auto [re,f,l] = notre::match<"([A-Za-z]+?),([A-Za-z]+?)">(sv); re) {
 	#else
-	using namespace ctre::literals;
-	if (auto [re,f,l] = "([A-Za-z]+?),([A-Za-z]+?)"_ctre.match(sv); re) {
+	using namespace notre::literals;
+	if (auto [re,f,l] = "([A-Za-z]+?),([A-Za-z]+?)"_notre.match(sv); re) {
 	#endif
 		return name{true, f,l};
 	} else {

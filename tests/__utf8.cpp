@@ -1,12 +1,12 @@
-#include <ctre/utf8.hpp>
+#include <notre/utf8.hpp>
 #include <algorithm>
 
-#ifdef CTRE_ENABLE_UTF8_RANGE
+#ifdef NOTRE_ENABLE_UTF8_RANGE
 
 #define UNICODE_TEST(a) static_assert(call_test(u8 ##a, U ##a))
 
 constexpr bool call_test(std::u8string_view a, std::u32string_view b) {
-	auto utf = ctre::utf8_range(a);
+	auto utf = notre::utf8_range(a);
 	
 	auto a_it = utf.begin();
 	auto a_end = utf.end();

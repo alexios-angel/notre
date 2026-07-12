@@ -1,4 +1,4 @@
-ctre
+notre
 ====
 
 A compile-time (almost) PCRE-compatible regular expression matcher for C++.
@@ -8,10 +8,10 @@ Overview
 
 Fast compile-time regular expressions with support for matching/searching/capturing at compile-time or runtime. ::
 
-  ctre::match<"REGEX">(subject); // C++20
-  "REGEX"_ctre.match(subject); // C++17 + N3599 extension
+  notre::match<"REGEX">(subject); // C++20
+  "REGEX"_notre.match(subject); // C++17 + N3599 extension
 
-.. toctree::
+.. tonotree::
    :maxdepth: 2
 
    api
@@ -36,11 +36,11 @@ Template UDL syntax
 Compiler must support N3599 extension, as GNU extension in gcc (not in GCC 9.1+) and clang. ::
 
   constexpr auto match(std::string_view sv) noexcept {
-  	using namespace ctre::literals;
-  	return "h.*"_ctre.match(sv);
+  	using namespace notre::literals;
+  	return "h.*"_notre.match(sv);
   }
 
-If you need N3599 extension in GCC 9.1+ you can't use -pedantic mode and define the macro ``CTRE_ENABLE_LITERALS``.
+If you need N3599 extension in GCC 9.1+ you can't use -pedantic mode and define the macro ``NOTRE_ENABLE_LITERALS``.
 
 C++17 syntax
 ------------
@@ -50,7 +50,7 @@ You can provide pattern as a constexpr ``ctll::fixed_string variable``. ::
   static constexpr auto pattern = ctll::fixed_string{ "h.*" };
   
   constexpr auto match(std::string_view sv) noexcept {
-  	return ctre::match<pattern>(sv);
+  	return notre::match<pattern>(sv);
   }
 
 (this is tested in MSVC 15.8.8)
@@ -58,9 +58,9 @@ You can provide pattern as a constexpr ``ctll::fixed_string variable``. ::
 C++20 syntax
 ------------
 
-Currently only compiler which supports cNTTP syntax ``ctre::match<PATTERN>(subject)`` is GCC 9+. ::
+Currently only compiler which supports cNTTP syntax ``notre::match<PATTERN>(subject)`` is GCC 9+. ::
 
   constexpr auto match(std::string_view sv) noexcept {
-  	return ctre::match<"h.*">(sv);
+  	return notre::match<"h.*">(sv);
   }
 

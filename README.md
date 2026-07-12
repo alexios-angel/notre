@@ -15,13 +15,13 @@
 Fast compile-time regular expressions with support for matching/searching/capturing during compile-time or runtime.
 
 ```c++
-ctre::match<"REGEX">(subject);   // C++20
-"REGEX"_ctre.match(subject);     // C++17 + N3599 extension
+notre::match<"REGEX">(subject);   // C++20
+"REGEX"_notre.match(subject);     // C++17 + N3599 extension
 ```
 
 The pattern is parsed and compiled into a matcher when *your code* compiles — a malformed regex is a compile error, not a runtime exception — and matching itself can run at compile time (`constexpr`) or at runtime with no allocation and no regex-compilation cost.
 
-The library is header-only. You can use the single-header version from the `single-header` directory, consume it as a CMake target (`ctre::ctre`), or import it as a C++ module (experimental, see below).
+The library is header-only. You can use the single-header version from the `single-header` directory, consume it as a CMake target (`notre::notre`), or import it as a C++ module (experimental, see below).
 
 More info at [compile-time.re](https://compile-time.re/). Original upstream documentation and talks by the library's author, Hana Dusíková, cover the design in depth.
 
@@ -29,6 +29,7 @@ More info at [compile-time.re](https://compile-time.re/). Original upstream docu
 
 - [Overview](#overview)
 - [Basic API](#basic-api)
+- [Debugging](#debugging)
 - [Iterating over multiple matches](#iterating-over-multiple-matches)
 - [Working with results](#working-with-results)
 - [Flags and modes](#flags-and-modes)
@@ -57,7 +58,7 @@ What the library can do:
 * Atomic groups `(?>...)` and possessive quantifiers (`a++`, `a*+`, ...)
 * Lazy and greedy quantifiers
 * Multiline matching (`multiline_*` function variants)
-* Case-insensitive matching (`ctre::case_insensitive` modifier or inline `(?i)`)
+* Case-insensitive matching (`notre::case_insensitive` modifier or inline `(?i)`)
 * Comments with the `(?#...)` syntax
 * Callouts — `(?Cn)` and `(?C'name')` observation points that can veto match positions, dispatched through a user handler (see [Callouts](#callouts))
 * Octal escapes (`\o{ddd...}` and `\0dd`) and control characters (`\cX`)
@@ -89,26 +90,26 @@ This is an approximated API specification from a user perspective (omitting `con
 
 ```c++
 // whole input must match the regex:
-template <ctll::fixed_string regex> auto ctre::match(auto Range &&) -> regex_results;
-template <ctll::fixed_string regex> auto ctre::match(auto First &&, auto Last &&) -> regex_results;
+template <ctll::fixed_string regex> auto notre::match(auto Range &&) -> regex_results;
+template <ctll::fixed_string regex> auto notre::match(auto First &&, auto Last &&) -> regex_results;
 
 // look for a match anywhere inside the input:
-template <ctll::fixed_string regex> auto ctre::search(auto Range &&) -> regex_results;
-template <ctll::fixed_string regex> auto ctre::search(auto First &&, auto Last &&) -> regex_results;
+template <ctll::fixed_string regex> auto notre::search(auto Range &&) -> regex_results;
+template <ctll::fixed_string regex> auto notre::search(auto First &&, auto Last &&) -> regex_results;
 
 // check if the input starts with a match (doesn't need to match everything):
-template <ctll::fixed_string regex> auto ctre::starts_with(auto Range &&) -> regex_results;
-template <ctll::fixed_string regex> auto ctre::starts_with(auto First &&, auto Last &&) -> regex_results;
+template <ctll::fixed_string regex> auto notre::starts_with(auto Range &&) -> regex_results;
+template <ctll::fixed_string regex> auto notre::starts_with(auto First &&, auto Last &&) -> regex_results;
 ```
 
 Each function also has a `multiline_` variant (see [Flags and modes](#flags-and-modes)).
 
 ### Functors
 
-All of the functions (`ctre::match`, `ctre::search`, `ctre::starts_with`, `ctre::search_all`, `ctre::split`, `ctre::tokenize`, `ctre::iterator`) are functors — variable templates instantiating a callable — so you can store and pass them without parentheses:
+All of the functions (`notre::match`, `notre::search`, `notre::starts_with`, `notre::search_all`, `notre::split`, `notre::tokenize`, `notre::iterator`) are functors — variable templates instantiating a callable — so you can store and pass them without parentheses:
 
 ```c++
-constexpr auto matcher = ctre::match<"[a-z]+">;
+constexpr auto matcher = notre::match<"[a-z]+">;
 if (matcher(input)) { ... }
 ```
 
@@ -119,25 +120,89 @@ if (matcher(input)) { ... }
 * zero-terminated `const char *` / `const wchar_t *` (no `strlen` needed — the terminator is detected during matching)
 * pairs of forward iterators
 
+## Debugging
+
+A malformed pattern is a hard compile error, and matching one regex
+against a string is a wall of template types — the two things that make
+a compile-time regex library hard to debug. `notre` answers both, all
+at compile time.
+
+**Why won't my pattern compile?** `notre::match<"...">` and friends
+turn a syntax error into a `static_assert`. These queries never
+hard-error and tell you *where* and *why*:
+
+```c++
+static_assert(notre::valid<"[a-z]+">);          // a bool, never an error
+
+constexpr auto e = notre::error_info<"a(b|c">();
+// e.kind (notre::error_kind::syntax / ::none), e.position, e.line, e.column
+
+constexpr auto why = notre::error_message<"a(b|c">();
+//   notre: regex syntax error at position 5 (line 1, column 6)
+//     a(b|c
+//          ^
+```
+
+`error_message()` renders into static storage, so you can
+`static_assert` it, print it, or surface it in your own tooling. Define
+`NOTRE_VERBOSE_ERRORS` and a failed `match<>()` also puts the position,
+line and column straight into the compiler's backtrace
+(`verbose_regex_error<5, 1, 6>`), no query needed.
+
+**What did my pattern actually compile to?** The single most useful
+thing when a regex does not behave the way you read it is to see the
+atom tree the matcher walks — after desugaring, quantifier lowering,
+alternation and subroutine inlining:
+
+```c++
+constexpr auto tree = notre::debug::dump_ast<"a(b|c)+\\d">();
+//   sequence
+//     character 'a'
+//     + (one or more) greedy
+//       capture #1
+//         alternation
+//           character 'b'
+//           character 'c'
+//     set [...]
+//       range '0'-'9'
+```
+
+It labels greedy / lazy / possessive quantifiers, named and numbered
+captures, back-references, look-arounds, anchors, boundaries, character
+classes and more. An invalid pattern renders the `error_message()`
+diagnostic instead.
+
+**Stepping through a match.** Matching runs at runtime as well as at
+compile time — that is the whole design — so there is no separate
+tracing facility: call the matcher on a runtime string in an ordinary
+build and step through it in a debugger on exactly the input that
+misbehaves. For internal invariant checks during constant evaluation,
+define `NOTRE_DEBUG` to arm `NOTRE_CONSTEXPR_ASSERT`; a violated check
+stops constant evaluation with its message (and aborts at runtime),
+and compiles away entirely otherwise.
+
+All of the above work through the C++17 API too (pass `constexpr
+ctll::fixed_string` variables instead of string literals).
+
 ## Iterating over multiple matches
 
 ```c++
 // search for the regex repeatedly, returning each occurrence (skips non-matching input):
-template <ctll::fixed_string regex> auto ctre::search_all(auto Range &&) -> range of regex_results;
+template <ctll::fixed_string regex> auto notre::search_all(auto Range &&) -> range of regex_results;
 
 // consecutive matches anchored to each previous match's end, stopping at the first gap:
-template <ctll::fixed_string regex> auto ctre::tokenize(auto Range &&) -> range of regex_results;
+template <ctll::fixed_string regex> auto notre::tokenize(auto Range &&) -> range of regex_results;
 
 // parts of the input between matches (the separator regex's own captures stay accessible on each result):
-template <ctll::fixed_string regex> auto ctre::split(auto Range &&) -> range of regex_results;
+template <ctll::fixed_string regex> auto notre::split(auto Range &&) -> range of regex_results;
 ```
 
-> `ctre::range` is a deprecated alias of `ctre::search_all` and will warn on use.
+> `notre::range` is a deprecated alias of `notre::search_all` and will warn on use.
 
 These are lazy ranges — matching happens as you iterate:
 
 ```c++
-for (auto match : ctre::search_all<"[0-9]+">("1, 2, 42")) {
+for (auto match : notre::search_all<"[0-9]+">("1, 2, 42")) {
     std::cout << match.to_view() << '\n';   // 1  2  42
 }
 ```
@@ -145,19 +210,19 @@ for (auto match : ctre::search_all<"[0-9]+">("1, 2, 42")) {
 They also support a pipeline style:
 
 ```c++
-for (auto match : input | ctre::search_all<"[0-9]+">) { ... }
+for (auto match : input | notre::search_all<"[0-9]+">) { ... }
 ```
 
-Piping a range of *subjects* (e.g. a vector of strings) into a non-range function like `ctre::match` yields one result per subject:
+Piping a range of *subjects* (e.g. a vector of strings) into a non-range function like `notre::match` yields one result per subject:
 
 ```c++
 std::vector<std::string_view> lines = ...;
-for (auto m : lines | ctre::match<"[a-z]+">) {
+for (auto m : lines | notre::match<"[a-z]+">) {
     if (m) { ... }   // one regex_results per line
 }
 ```
 
-If you need explicit iterators, `ctre::iterator<"regex">(input)` returns an iterator you can compare against `ctre::sentinel`.
+If you need explicit iterators, `notre::iterator<"regex">(input)` returns an iterator you can compare against `notre::sentinel`.
 
 ## Working with results
 
@@ -192,39 +257,39 @@ Notes:
 * Each capture object has the same conversion API as the whole result (`to_view`, `to_string`, `to_number`, `operator bool` for "did this group participate", `size()`, ...).
 * `to_view` / `data()` require the subject to have been a contiguous, non-reverse range; matching itself works with plain forward iterators.
 * `to_number` uses `std::from_chars`, so it's `constexpr` only where your standard library makes `from_chars` `constexpr` (C++23).
-* `regex_results` supports structured bindings: `auto [whole, first, second] = ctre::match<...>(input);`
+* `regex_results` supports structured bindings: `auto [whole, first, second] = notre::match<...>(input);`
 
 ## Flags and modes
 
 Case-insensitive and multiline matching can be selected three ways:
 
 ```c++
-// 1. modifier as an extra template argument (ctre::case_insensitive, ctre::case_sensitive,
-//    aliases ctre::ci / ctre::cs, and ctre::multiline / ctre::singleline):
-ctre::match<"hello", ctre::case_insensitive>("HeLLo");
+// 1. modifier as an extra template argument (notre::case_insensitive, notre::case_sensitive,
+//    aliases notre::ci / notre::cs, and notre::multiline / notre::singleline):
+notre::match<"hello", notre::case_insensitive>("HeLLo");
 
 // 2. inline mode switch inside the pattern: (?i) (?c) (?s) (?m), e.g.
-ctre::match<"(?i)hello">("HELLO");
+notre::match<"(?i)hello">("HELLO");
 
 // 3. multiline_ function variants, which make ^ and $ match at line boundaries:
-ctre::multiline_search<"^bar$">("foo\nbar");
+notre::multiline_search<"^bar$">("foo\nbar");
 ```
 
 Every function has a `multiline_` twin: `multiline_match`, `multiline_search`, `multiline_starts_with`, `multiline_search_all`, `multiline_split`, `multiline_tokenize`, `multiline_iterator` (+ `multiline_sentinel`).
 
 ## Callouts
 
-`(?Cn)` (numbered) and `(?C'name')` / `(?C"name")` (named) are zero-width observation points. Attach implementations with the `ctre::with_callouts` modifier as inline entries — one `ctll::callout` per name or number:
+`(?Cn)` (numbered) and `(?C'name')` / `(?C"name")` (named) are zero-width observation points. Attach implementations with the `notre::with_callouts` modifier as inline entries — one `ctll::callout` per name or number:
 
 ```c++
 // the veto makes the greedy + backtrack: group 1 is "12", not "123"
-ctre::search<"([0-9]+)(?C'limit')", ctre::with_callouts<
+notre::search<"([0-9]+)(?C'limit')", notre::with_callouts<
     ctll::callout<"limit", [](const auto & c) { return c.position - c.match_start <= 2; }>,
     ctll::callout<2,       [](const auto & c) { /* pure observer for (?C2) */ }>
 >>("xx123yy");
 ```
 
-Each entry is matched to its callout at compile time (numbers by their decimal spelling: `ctll::callout<7, f>` serves `(?C7)`) and invoked directly, with no lookup at match time. The callable receives a `ctre::callout_data` — the callout's number and name, the whole subject, and the code-unit offsets of the current position and the match attempt's start — and may return `ctre::callout_result`, `bool` (`true` = proceed), or `void` (observer). `fail`/`false` vetoes the position and normal backtracking continues, like PCRE's nonzero callout return. Generic lambdas work with any subject character type.
+Each entry is matched to its callout at compile time (numbers by their decimal spelling: `ctll::callout<7, f>` serves `(?C7)`) and invoked directly, with no lookup at match time. The callable receives a `notre::callout_data` — the callout's number and name, the whole subject, and the code-unit offsets of the current position and the match attempt's start — and may return `notre::callout_result`, `bool` (`true` = proceed), or `void` (observer). `fail`/`false` vetoes the position and normal backtracking continues, like PCRE's nonzero callout return. Generic lambdas work with any subject character type.
 
 For dispatch chosen at match time instead, pass one handler type whose static `callouts()` returns a `ctll::map` from names to `ctll::function`s:
 
@@ -232,15 +297,15 @@ For dispatch chosen at match time instead, pass one handler type whose static `c
 struct my_handler {
     static constexpr auto callouts() {
         return ctll::map{
-            std::pair{"limit", ctll::function<ctre::callout_result(const ctre::callout_data<char> &)>(
+            std::pair{"limit", ctll::function<notre::callout_result(const notre::callout_data<char> &)>(
                 [](const auto & c) {
-                    return c.position - c.match_start <= 2 ? ctre::callout_result::proceed
-                                                           : ctre::callout_result::fail;
+                    return c.position - c.match_start <= 2 ? notre::callout_result::proceed
+                                                           : notre::callout_result::fail;
                 })},
         };
     }
 };
-ctre::search<"([0-9]+)(?C'limit')", ctre::with_callouts<my_handler>>("xx123yy");
+notre::search<"([0-9]+)(?C'limit')", notre::with_callouts<my_handler>>("xx123yy");
 ```
 
 In both forms, a callout with no matching entry or key — or a pattern used without the modifier — is a no-op, like PCRE with no callout function set. Both require C++20 (entries need class-type template parameters, the map form needs `ctll::function`). Restrictions: the subject must be a contiguous character range (no zero-terminated pointers, no UTF-8 range), and callouts inside lookbehinds are not supported (both are compile errors).
@@ -253,7 +318,7 @@ With compilers supporting class-type non-type template parameters you can write 
 
 ```c++
 constexpr auto match(std::string_view sv) noexcept {
-    return ctre::match<"h.*">(sv);
+    return notre::match<"h.*">(sv);
 }
 ```
 
@@ -265,7 +330,7 @@ Provide the pattern as a `constexpr ctll::fixed_string` variable:
 static constexpr auto pattern = ctll::fixed_string{ "h.*" };
 
 constexpr auto match(std::string_view sv) noexcept {
-    return ctre::match<pattern>(sv);
+    return notre::match<pattern>(sv);
 }
 ```
 
@@ -282,24 +347,24 @@ The compiler must support the N3599 extension (a GNU extension in gcc and clang)
 
 ```c++
 constexpr auto match(std::string_view sv) noexcept {
-    using namespace ctre::literals;
-    return "h.*"_ctre.match(sv);
+    using namespace notre::literals;
+    return "h.*"_notre.match(sv);
 }
 ```
 
-If you need the N3599 extension in GCC 9.1+, you can't use `-pedantic`, and you need to define the macro `CTRE_ENABLE_LITERALS`.
+If you need the N3599 extension in GCC 9.1+, you can't use `-pedantic`, and you need to define the macro `NOTRE_ENABLE_LITERALS`.
 
 ## Unicode support
 
 To enable Unicode (UTF-8 decoding and `\p{...}` property classes) include:
 
-* `<ctre-unicode.hpp>`
-* or `<ctre.hpp>` and `<unicode-db.hpp>`
+* `<notre-unicode.hpp>`
+* or `<notre.hpp>` and `<unicode-db.hpp>`
 
 Otherwise you will get missing symbols if you try to use the Unicode support without enabling it. Subjects of type `std::u8string_view` are decoded as UTF-8 during matching.
 
 ```c++
-#include <ctre-unicode.hpp>
+#include <notre-unicode.hpp>
 #include <iostream>
 
 // needed if you want to output to the terminal
@@ -311,7 +376,7 @@ int main() {
     using namespace std::literals;
     std::u8string_view original = u8"Tu es un génie"sv;
 
-    for (auto match : ctre::search_all<"\\p{Letter}+">(original))
+    for (auto match : notre::search_all<"\\p{Letter}+">(original))
         std::cout << cast_from_unicode(match) << std::endl;
 }
 ```
@@ -326,7 +391,7 @@ Runnable versions of these (and more) live in the [`examples/`](examples/) direc
 
 ```c++
 std::optional<std::string_view> extract_number(std::string_view s) noexcept {
-    if (auto m = ctre::match<"[a-z]+([0-9]+)">(s)) {
+    if (auto m = notre::match<"[a-z]+([0-9]+)">(s)) {
         return m.get<1>().to_view();
     } else {
         return std::nullopt;
@@ -342,7 +407,7 @@ std::optional<std::string_view> extract_number(std::string_view s) noexcept {
 struct date { std::string_view year; std::string_view month; std::string_view day; };
 
 constexpr std::optional<date> extract_date(std::string_view s) noexcept {
-    if (auto [whole, year, month, day] = ctre::match<"(\\d{4})/(\\d{1,2})/(\\d{1,2})">(s); whole) {
+    if (auto [whole, year, month, day] = notre::match<"(\\d{4})/(\\d{1,2})/(\\d{1,2})">(s); whole) {
         return date{year, month, day};
     } else {
         return std::nullopt;
@@ -360,7 +425,7 @@ static_assert((*extract_date("2018/08/27"sv)).day == "27"sv);
 ### Using named captures
 
 ```c++
-auto result = ctre::match<"(?<year>\\d{4})/(?<month>\\d{1,2})/(?<day>\\d{1,2})">(s);
+auto result = notre::match<"(?<year>\\d{4})/(?<month>\\d{1,2})/(?<day>\\d{1,2})">(s);
 return date{result.get<"year">(), result.get<"month">(), result.get<"day">()};
 
 // or use numbered access — capture 0 is the whole match
@@ -371,7 +436,7 @@ return date{result.get<1>(), result.get<2>(), result.get<3>()};
 
 ```c++
 int port_of(std::string_view address) noexcept {
-    if (auto m = ctre::search<":([0-9]+)">(address)) {
+    if (auto m = notre::search<":([0-9]+)">(address)) {
         return m.get<1>().to_number<int>();
     }
     return -1;
@@ -391,7 +456,7 @@ struct lex_item {
 };
 
 std::optional<lex_item> lexer(std::string_view v) noexcept {
-    if (auto [m, id, num] = ctre::match<"([a-z]+)|([0-9]+)">(v); m) {
+    if (auto [m, id, num] = notre::match<"([a-z]+)|([0-9]+)">(v); m) {
         if (id) {
             return lex_item{type::identifier, id};
         } else if (num) {
@@ -409,7 +474,7 @@ std::optional<lex_item> lexer(std::string_view v) noexcept {
 ```c++
 auto input = "123,456,768"sv;
 
-for (auto match : ctre::search_all<"([0-9]+),?">(input)) {
+for (auto match : notre::search_all<"([0-9]+),?">(input)) {
     std::cout << std::string_view{match.get<0>()} << "\n";
 }
 ```
@@ -417,7 +482,7 @@ for (auto match : ctre::search_all<"([0-9]+),?">(input)) {
 ### Splitting
 
 ```c++
-for (auto part : ctre::split<",">("a,b,c"sv)) {
+for (auto part : notre::split<",">("a,b,c"sv)) {
     std::cout << part.to_view() << "\n";   // a  b  c
 }
 ```
@@ -428,16 +493,16 @@ The CI matrix (`.github/workflows/tests.yml`) builds every test in both C++17 an
 
 * clang 14.0+ (C++17 syntax, C++20 cNTTP syntax, template UDL; libc++ and libstdc++)
 * Apple clang / Xcode 15.0+ (C++17 syntax, C++20 cNTTP syntax, template UDL)
-* gcc 9.0+ (C++17 & C++20 cNTTP syntax; UDL needs `CTRE_ENABLE_LITERALS` and no `-pedantic` on 9.1+)
+* gcc 9.0+ (C++17 & C++20 cNTTP syntax; UDL needs `NOTRE_ENABLE_LITERALS` and no `-pedantic` on 9.1+)
 * MSVC 14.29+ (Visual Studio 16.11+) (C++20 cNTTP syntax)
 
 ## Installation and integration
 
-CTRE is header-only; the minimum viable integration is copying one file.
+notre is header-only; the minimum viable integration is copying one file.
 
 ### Single header
 
-Copy `single-header/ctre.hpp` (or `single-header/ctre-unicode.hpp` together with `single-header/unicode-db.hpp` for Unicode support) into your project. These files can be regenerated from `include/` with `make single-header` (requires Python with the [quom](https://pypi.org/project/quom/) tool).
+Copy `single-header/notre.hpp` (or `single-header/notre-unicode.hpp` together with `single-header/unicode-db.hpp` for Unicode support) into your project. These files can be regenerated from `include/` with `make single-header` (requires Python with the [quom](https://pypi.org/project/quom/) tool).
 
 ### CMake
 
@@ -445,29 +510,29 @@ Add this repository as a subdirectory (or via `FetchContent`) and link against t
 
 ```cmake
 add_subdirectory(notre)             # or FetchContent
-target_link_libraries(your-target PRIVATE ctre::ctre)
+target_link_libraries(your-target PRIVATE notre::notre)
 ```
 
 Or install system-wide (`cmake --install`) and use:
 
 ```cmake
-find_package(ctre REQUIRED)
-target_link_libraries(your-target PRIVATE ctre::ctre)
+find_package(notre REQUIRED)
+target_link_libraries(your-target PRIVATE notre::notre)
 ```
 
-The install also ships a `pkg-config` file (`ctre.pc`), and CPack can produce DEB/RPM/archive packages. The `CTRE_CXX_STANDARD` cache variable selects the C++ standard advertised by the target (default 20).
+The install also ships a `pkg-config` file (`notre.pc`), and CPack can produce DEB/RPM/archive packages. The `NOTRE_CXX_STANDARD` cache variable selects the C++ standard advertised by the target (default 20).
 
 ### C++ module (experimental)
 
-With CMake 3.30+ and a modules-capable toolchain, configure with `-DCTRE_MODULE=ON` to build `ctre.cppm` as a named module (uses `import std;`, so it requires C++23):
+With CMake 3.30+ and a modules-capable toolchain, configure with `-DNOTRE_MODULE=ON` to build `notre.cppm` as a named module (uses `import std;`, so it requires C++23):
 
 ```c++
-import ctre;
+import notre;
 ```
 
 ### vcpkg
 
-You can download and install ctre using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
+You can download and install notre using the [vcpkg](https://github.com/Microsoft/vcpkg) dependency manager:
 
 ```bash
 git clone https://github.com/Microsoft/vcpkg.git
@@ -485,11 +550,11 @@ A `conanfile.py` recipe is included in the repository root.
 
 ## Running tests (for developers)
 
-Run `make` in the root of the project to build and run the test suite (add `CXX_STANDARD=17` for C++17 mode). Alternatively, configure with CMake and build the `ctre-test` target:
+Run `make` in the root of the project to build and run the test suite (add `CXX_STANDARD=17` for C++17 mode). Alternatively, configure with CMake and build the `notre-test` target:
 
 ```bash
-cmake -B build -DCTRE_BUILD_TESTS=ON
-cmake --build build --target ctre-test
+cmake -B build -DNOTRE_BUILD_TESTS=ON
+cmake --build build --target notre-test
 ```
 
 ## License

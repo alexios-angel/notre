@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'ctre'
+project = 'notre'
 copyright = '2019, Hana Dusikova'
 author = 'Hana Dusikova'
 master_doc = 'index'

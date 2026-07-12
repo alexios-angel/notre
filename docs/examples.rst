@@ -6,7 +6,7 @@ Extracting a number from input
 ::
 
   std::optional<std::string_view> extract_number(std::string_view s) noexcept {
-  	if (auto m = ctre::match<"[a-z]+([0-9]+)">(s)) {
+  	if (auto m = notre::match<"[a-z]+([0-9]+)">(s)) {
           return m.get<1>().to_view();
       } else {
           return std::nullopt;
@@ -22,8 +22,8 @@ Extracting values from date
 
   struct date { std::string_view year; std::string_view month; std::string_view day; };
   std::optional<date> extract_date(std::string_view s) noexcept {
-      using namespace ctre::literals;
-      if (auto [whole, year, month, day] = ctre::match<"(\\d{4})/(\\d{1,2})/(\\d{1,2})">(s); whole) {
+      using namespace notre::literals;
+      if (auto [whole, year, month, day] = notre::match<"(\\d{4})/(\\d{1,2})/(\\d{1,2})">(s); whole) {
           return date{year, month, day};
       } else {
           return std::nullopt;
@@ -51,7 +51,7 @@ Lexer
   };
   
   std::optional<lex_item> lexer(std::string_view v) noexcept {
-      if (auto [m,id,num] = ctre::match<"([a-z]+)|([0-9]+)">(v); m) {
+      if (auto [m,id,num] = notre::match<"([a-z]+)|([0-9]+)">(v); m) {
           if (id) {
               return lex_item{type::identifier, id};
           } else if (num) {
@@ -72,6 +72,6 @@ This support is preliminary and probably the API will be changed.
 
   auto input = "123,456,768"sv;
   
-  for (auto match: ctre::range<"([0-9]+),?">(input)) {
+  for (auto match: notre::range<"([0-9]+),?">(input)) {
   	std::cout << std::string_view{match.get<0>()} << "\n";
   }

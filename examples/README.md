@@ -13,14 +13,14 @@ time.
 | [`lexer.cpp`](lexer.cpp) | classifying tokens with one alternation pattern |
 | [`search-all.cpp`](search-all.cpp) | `search_all` ranges, pipe syntax, `iterator`/`sentinel`, multi-subject piping |
 | [`split-tokenize.cpp`](split-tokenize.cpp) | `split` (with separator captures) and `tokenize` |
-| [`flags-and-modes.cpp`](flags-and-modes.cpp) | `ctre::case_insensitive`, inline `(?i)` modes, `multiline_*` functions |
+| [`flags-and-modes.cpp`](flags-and-modes.cpp) | `notre::case_insensitive`, inline `(?i)` modes, `multiline_*` functions |
 | [`subroutines.cpp`](subroutines.cpp) | `(?1)` / `(?&name)` calls vs backreferences, atomicity, `(?(DEFINE)...)` pattern libraries |
 | [`conditionals.cpp`](conditionals.cpp) | `(?(1)yes\|no)` group and assertion conditions, the quoted-or-bare idiom |
 | [`match-point-reset.cpp`](match-point-reset.cpp) | `\K` — required-but-unreported prefixes, variable-length lookbehind alternative |
 | [`callouts.cpp`](callouts.cpp) | `(?C'name')` / `(?Cn)` with inline `ctll::callout` entries and a map handler, vetoing and observing |
 | [`unicode.cpp`](unicode.cpp) | UTF-8 subjects, `\p{...}` properties, `\X` grapheme clusters |
 | [`ctll-utilities.cpp`](ctll-utilities.cpp) | the standalone toolkit: `ctll::fixed_string`, `ctll::function`, `ctll::map` |
-| [`cxx17-syntax.cpp`](cxx17-syntax.cpp) | the C++17 API: `ctll::fixed_string` patterns and the `_ctre` UDL |
+| [`cxx17-syntax.cpp`](cxx17-syntax.cpp) | the C++17 API: `ctll::fixed_string` patterns and the `_notre` UDL |
 
 ## Building
 

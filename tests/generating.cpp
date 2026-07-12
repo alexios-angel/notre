@@ -1,26 +1,26 @@
-#include <ctre.hpp>
+#include <notre.hpp>
 
 void empty_symbol() { }
 
 template <typename... T> struct id_type;
 
-using namespace ctre::test_literals;
+using namespace notre::test_literals;
 
-#if !CTRE_CNTTP_COMPILER_CHECK
-#define CTRE_GEN(pattern) (pattern ## _ctre_gen)
+#if !NOTRE_CNTTP_COMPILER_CHECK
+#define NOTRE_GEN(pattern) (pattern ## _notre_gen)
 #else
 
 
 template <ctll::fixed_string input> constexpr auto gen() {
 	constexpr auto _input = input;
 	
-	using tmp = typename ctll::parser<ctre::pcre, _input, ctre::pcre_actions>::template output<ctre::pcre_context<>>;
+	using tmp = typename ctll::parser<notre::pcre, _input, notre::pcre_actions>::template output<notre::pcre_context<>>;
 	static_assert(tmp(), "Regular Expression contains syntax error.");
 	return typename tmp::output_type::stack_type();
 }
 
 
-#define CTRE_GEN(pattern) gen<pattern>()
+#define NOTRE_GEN(pattern) gen<pattern>()
 
 #endif
 
@@ -33,294 +33,294 @@ template <typename A, typename B> constexpr bool same_f(A a,B b) {
 }
 
 // basics
-static_assert(same_f(CTRE_GEN(""), ctre::empty()));
-static_assert(same_f(CTRE_GEN("y"), ctre::character<'y'>()));
+static_assert(same_f(NOTRE_GEN(""), notre::empty()));
+static_assert(same_f(NOTRE_GEN("y"), notre::character<'y'>()));
 
 // unicode
 #if __cpp_char8_t
-static_assert(same_f(CTRE_GEN(u8"😍"), ctre::character<U'😍'>()));
-static_assert(same_f(CTRE_GEN(u8"[😍]"), ctre::set<ctre::character<U'😍'>>()));
+static_assert(same_f(NOTRE_GEN(u8"😍"), notre::character<U'😍'>()));
+static_assert(same_f(NOTRE_GEN(u8"[😍]"), notre::set<notre::character<U'😍'>>()));
 #endif
-static_assert(same_f(CTRE_GEN(U"😍"), ctre::character<U'😍'>()));
-static_assert(same_f(CTRE_GEN(U"[😍]"), ctre::set<ctre::character<U'😍'>>()));
+static_assert(same_f(NOTRE_GEN(U"😍"), notre::character<U'😍'>()));
+static_assert(same_f(NOTRE_GEN(U"[😍]"), notre::set<notre::character<U'😍'>>()));
 
 // stringification
-static_assert(ctll::size(CTRE_GEN("abc")) == 1);
-static_assert(same_f(CTRE_GEN("abc"), ctre::string<'a','b','c'>()));
-static_assert(same_f(CTRE_GEN("(?:abc)"), ctre::string<'a','b','c'>()));
+static_assert(ctll::size(NOTRE_GEN("abc")) == 1);
+static_assert(same_f(NOTRE_GEN("abc"), notre::string<'a','b','c'>()));
+static_assert(same_f(NOTRE_GEN("(?:abc)"), notre::string<'a','b','c'>()));
 
 // support for hexdec
-static_assert(same_f(CTRE_GEN("\\x40"), ctre::character<char{0x40}>()));
-static_assert(same_f(CTRE_GEN("\\x7F"), ctre::character<char{0x7F}>()));
+static_assert(same_f(NOTRE_GEN("\\x40"), notre::character<char{0x40}>()));
+static_assert(same_f(NOTRE_GEN("\\x7F"), notre::character<char{0x7F}>()));
 // only characters with value < 128 are char otherwise they are internally char32_t
 constexpr unsigned char_length = (std::numeric_limits<char>::max)();
 constexpr bool char_is_unsigned = (char_length == 255);
 // I wish I could have operator implication here :(
 using expected_type = std::conditional_t<char_is_unsigned, char, char32_t>;
-static_assert(same_f(CTRE_GEN("\\x80"), ctre::character<expected_type{0x80}>()));
-static_assert(same_f(CTRE_GEN("\\xFF"), ctre::character<expected_type{0xFF}>()));
-static_assert(same_f(CTRE_GEN("\\x{FF}"), ctre::character<expected_type{0xFF}>()));
+static_assert(same_f(NOTRE_GEN("\\x80"), notre::character<expected_type{0x80}>()));
+static_assert(same_f(NOTRE_GEN("\\xFF"), notre::character<expected_type{0xFF}>()));
+static_assert(same_f(NOTRE_GEN("\\x{FF}"), notre::character<expected_type{0xFF}>()));
 
-static_assert(same_f(CTRE_GEN("\\x{FFF}"), ctre::character<char32_t{0xFFF}>()));
-static_assert(same_f(CTRE_GEN("\\x{ABCD}"), ctre::character<char32_t{0xABCD}>()));
+static_assert(same_f(NOTRE_GEN("\\x{FFF}"), notre::character<char32_t{0xFFF}>()));
+static_assert(same_f(NOTRE_GEN("\\x{ABCD}"), notre::character<char32_t{0xABCD}>()));
 
 // anything
-static_assert(same_f(CTRE_GEN("."), ctre::any()));
+static_assert(same_f(NOTRE_GEN("."), notre::any()));
 
 // sequence
-static_assert(same_f(CTRE_GEN("x.ab"), ctre::sequence<ctre::character<'x'>,ctre::any,ctre::string<'a','b'>>()));
+static_assert(same_f(NOTRE_GEN("x.ab"), notre::sequence<notre::character<'x'>,notre::any,notre::string<'a','b'>>()));
 
 // character class
-static_assert(same_f(CTRE_GEN("\\d"), ctre::set<ctre::digit_chars>()));
-static_assert(same_f(CTRE_GEN("\\D"), ctre::negative_set<ctre::digit_chars>()));
-static_assert(same_f(CTRE_GEN("\\n"), ctre::character<'\n'>()));
-static_assert(same_f(CTRE_GEN("\\N"), ctre::negative_set<ctre::character<'\n'>>()));
-static_assert(same_f(CTRE_GEN("\\w"), ctre::set<ctre::word_chars>()));
-static_assert(same_f(CTRE_GEN("\\W"), ctre::negative_set<ctre::word_chars>()));
-static_assert(same_f(CTRE_GEN("\\s"), ctre::set<ctre::space_chars>()));
-static_assert(same_f(CTRE_GEN("\\S"), ctre::negative_set<ctre::space_chars>()));
+static_assert(same_f(NOTRE_GEN("\\d"), notre::set<notre::digit_chars>()));
+static_assert(same_f(NOTRE_GEN("\\D"), notre::negative_set<notre::digit_chars>()));
+static_assert(same_f(NOTRE_GEN("\\n"), notre::character<'\n'>()));
+static_assert(same_f(NOTRE_GEN("\\N"), notre::negative_set<notre::character<'\n'>>()));
+static_assert(same_f(NOTRE_GEN("\\w"), notre::set<notre::word_chars>()));
+static_assert(same_f(NOTRE_GEN("\\W"), notre::negative_set<notre::word_chars>()));
+static_assert(same_f(NOTRE_GEN("\\s"), notre::set<notre::space_chars>()));
+static_assert(same_f(NOTRE_GEN("\\S"), notre::negative_set<notre::space_chars>()));
 
 // set support
-static_assert(same_f(CTRE_GEN("[a]"), ctre::set<ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("[^a]"), ctre::negative_set<ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("[[:digit:]]"), ctre::set<ctre::digit_chars>()));
-static_assert(same_f(CTRE_GEN("[ab]"), ctre::set<ctre::character<'a'>,ctre::character<'b'>>()));
-static_assert(same_f(CTRE_GEN("[^ab]"), ctre::negative_set<ctre::character<'a'>,ctre::character<'b'>>()));
-static_assert(same_f(CTRE_GEN("[[:digit:][:digit:]]"), ctre::set<ctre::digit_chars>()));
-static_assert(same_f(CTRE_GEN("[^[:punct:]]"), ctre::negative_set<ctre::punct_chars>()));
-static_assert(same_f(CTRE_GEN("[[:^digit:]]"), ctre::set<ctre::negate<ctre::digit_chars>>()));
-static_assert(same_f(CTRE_GEN("[[:^digit:][:^alpha:]]"), ctre::set<ctre::negate<ctre::digit_chars>, ctre::negate<ctre::alpha_chars>>()));
-static_assert(same_f(CTRE_GEN("[[:digit:][:alpha:]]"), ctre::set<ctre::digit_chars, ctre::alpha_chars>()));
-static_assert(same_f(CTRE_GEN("[[:digit:][:^alpha:]]"), ctre::set<ctre::digit_chars, ctre::negate<ctre::alpha_chars>>()));
-static_assert(same_f(CTRE_GEN("[a-z]"), ctre::set<ctre::char_range<'a','z'>>()));
-static_assert(same_f(CTRE_GEN("[a-z0-9]"), ctre::set<ctre::char_range<'a','z'>,ctre::char_range<'0','9'>>()));
-static_assert(same_f(CTRE_GEN("[^a-z]"), ctre::negative_set<ctre::char_range<'a','z'>>()));
-static_assert(same_f(CTRE_GEN("[^a-z0-9]"), ctre::negative_set<ctre::char_range<'a','z'>,ctre::char_range<'0','9'>>()));
-static_assert(same_f(CTRE_GEN("[a-z[:digit:]]"), ctre::set<ctre::char_range<'a','z'>,ctre::digit_chars>()));
-static_assert(same_f(CTRE_GEN("[a-z98]"), ctre::set<ctre::char_range<'a','z'>,ctre::character<'9'>,ctre::character<'8'>>()));
-static_assert(same_f(CTRE_GEN("[\\w]"), ctre::set<ctre::set<ctre::word_chars>>()));
-static_assert(same_f(CTRE_GEN("[\\x30-\\x39]"), ctre::set<ctre::char_range<'\x30','\x39'>>()));
+static_assert(same_f(NOTRE_GEN("[a]"), notre::set<notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("[^a]"), notre::negative_set<notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("[[:digit:]]"), notre::set<notre::digit_chars>()));
+static_assert(same_f(NOTRE_GEN("[ab]"), notre::set<notre::character<'a'>,notre::character<'b'>>()));
+static_assert(same_f(NOTRE_GEN("[^ab]"), notre::negative_set<notre::character<'a'>,notre::character<'b'>>()));
+static_assert(same_f(NOTRE_GEN("[[:digit:][:digit:]]"), notre::set<notre::digit_chars>()));
+static_assert(same_f(NOTRE_GEN("[^[:punct:]]"), notre::negative_set<notre::punct_chars>()));
+static_assert(same_f(NOTRE_GEN("[[:^digit:]]"), notre::set<notre::negate<notre::digit_chars>>()));
+static_assert(same_f(NOTRE_GEN("[[:^digit:][:^alpha:]]"), notre::set<notre::negate<notre::digit_chars>, notre::negate<notre::alpha_chars>>()));
+static_assert(same_f(NOTRE_GEN("[[:digit:][:alpha:]]"), notre::set<notre::digit_chars, notre::alpha_chars>()));
+static_assert(same_f(NOTRE_GEN("[[:digit:][:^alpha:]]"), notre::set<notre::digit_chars, notre::negate<notre::alpha_chars>>()));
+static_assert(same_f(NOTRE_GEN("[a-z]"), notre::set<notre::char_range<'a','z'>>()));
+static_assert(same_f(NOTRE_GEN("[a-z0-9]"), notre::set<notre::char_range<'a','z'>,notre::char_range<'0','9'>>()));
+static_assert(same_f(NOTRE_GEN("[^a-z]"), notre::negative_set<notre::char_range<'a','z'>>()));
+static_assert(same_f(NOTRE_GEN("[^a-z0-9]"), notre::negative_set<notre::char_range<'a','z'>,notre::char_range<'0','9'>>()));
+static_assert(same_f(NOTRE_GEN("[a-z[:digit:]]"), notre::set<notre::char_range<'a','z'>,notre::digit_chars>()));
+static_assert(same_f(NOTRE_GEN("[a-z98]"), notre::set<notre::char_range<'a','z'>,notre::character<'9'>,notre::character<'8'>>()));
+static_assert(same_f(NOTRE_GEN("[\\w]"), notre::set<notre::set<notre::word_chars>>()));
+static_assert(same_f(NOTRE_GEN("[\\x30-\\x39]"), notre::set<notre::char_range<'\x30','\x39'>>()));
 
 // alternation
-static_assert(same_f(CTRE_GEN("(?:abc|def)"), ctre::select<ctre::string<'a','b','c'>,ctre::string<'d','e','f'>>()));
-static_assert(same_f(CTRE_GEN("(?:abc|def|ghi)"), ctre::select<ctre::string<'a','b','c'>,ctre::string<'d','e','f'>,ctre::string<'g','h','i'>>()));
-static_assert(same_f(CTRE_GEN("(?:a|b|c|d)"), ctre::select<ctre::character<'a'>,ctre::character<'b'>,ctre::character<'c'>,ctre::character<'d'>>()));
-static_assert(same_f(CTRE_GEN("(?:a|b|c|)"), ctre::select<ctre::character<'a'>,ctre::character<'b'>,ctre::character<'c'>,ctre::empty>()));
-static_assert(same_f(CTRE_GEN("(?:a|)"), ctre::select<ctre::character<'a'>, ctre::empty>()));
-static_assert(same_f(CTRE_GEN("(?:|a)"), ctre::select<ctre::empty, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("(?:|)"), ctre::select<ctre::empty, ctre::empty>()));
-static_assert(same_f(CTRE_GEN("(x|)"), ctre::capture<1, ctre::select<ctre::character<'x'>, ctre::empty>>()));
-static_assert(same_f(CTRE_GEN("(|x)"), ctre::capture<1, ctre::select<ctre::empty, ctre::character<'x'>>>()));
-static_assert(same_f(CTRE_GEN("(|)"), ctre::capture<1, ctre::select<ctre::empty, ctre::empty>>()));
+static_assert(same_f(NOTRE_GEN("(?:abc|def)"), notre::select<notre::string<'a','b','c'>,notre::string<'d','e','f'>>()));
+static_assert(same_f(NOTRE_GEN("(?:abc|def|ghi)"), notre::select<notre::string<'a','b','c'>,notre::string<'d','e','f'>,notre::string<'g','h','i'>>()));
+static_assert(same_f(NOTRE_GEN("(?:a|b|c|d)"), notre::select<notre::character<'a'>,notre::character<'b'>,notre::character<'c'>,notre::character<'d'>>()));
+static_assert(same_f(NOTRE_GEN("(?:a|b|c|)"), notre::select<notre::character<'a'>,notre::character<'b'>,notre::character<'c'>,notre::empty>()));
+static_assert(same_f(NOTRE_GEN("(?:a|)"), notre::select<notre::character<'a'>, notre::empty>()));
+static_assert(same_f(NOTRE_GEN("(?:|a)"), notre::select<notre::empty, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("(?:|)"), notre::select<notre::empty, notre::empty>()));
+static_assert(same_f(NOTRE_GEN("(x|)"), notre::capture<1, notre::select<notre::character<'x'>, notre::empty>>()));
+static_assert(same_f(NOTRE_GEN("(|x)"), notre::capture<1, notre::select<notre::empty, notre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("(|)"), notre::capture<1, notre::select<notre::empty, notre::empty>>()));
 
 
 // optional
-static_assert(same_f(CTRE_GEN("xx?"), ctre::sequence<ctre::character<'x'>,ctre::optional<ctre::character<'x'>>>()));
-static_assert(same_f(CTRE_GEN("xx?+"), ctre::sequence<ctre::character<'x'>,ctre::possessive_optional<ctre::character<'x'>>>()));
-static_assert(same_f(CTRE_GEN("xx??"), ctre::sequence<ctre::character<'x'>,ctre::lazy_optional<ctre::character<'x'>>>()));
-static_assert(same_f(CTRE_GEN("(?:abc)?"), ctre::optional<ctre::string<'a','b','c'>>()));
-static_assert(same_f(CTRE_GEN("(?:x)?"), ctre::optional<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("(?:x?)?"), ctre::optional<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("(?:x?)??"), ctre::lazy_optional<ctre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("xx?"), notre::sequence<notre::character<'x'>,notre::optional<notre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("xx?+"), notre::sequence<notre::character<'x'>,notre::possessive_optional<notre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("xx??"), notre::sequence<notre::character<'x'>,notre::lazy_optional<notre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("(?:abc)?"), notre::optional<notre::string<'a','b','c'>>()));
+static_assert(same_f(NOTRE_GEN("(?:x)?"), notre::optional<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?:x?)?"), notre::optional<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?:x?)??"), notre::lazy_optional<notre::character<'x'>>()));
 // the string is split due trigraph warning
-static_assert(same_f(CTRE_GEN("(?:x??" ")?"), ctre::lazy_optional<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("(?:x??" ")??"), ctre::lazy_optional<ctre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?:x??" ")?"), notre::lazy_optional<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?:x??" ")??"), notre::lazy_optional<notre::character<'x'>>()));
 
 // repeat
-static_assert(same_f(CTRE_GEN("x+"), ctre::plus<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("(?:abc)+"), ctre::plus<ctre::string<'a','b','c'>>()));
-static_assert(same_f(CTRE_GEN("x*"), ctre::star<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("(?:abc)*"), ctre::star<ctre::string<'a','b','c'>>()));
-static_assert(same_f(CTRE_GEN("x{1}"), ctre::repeat<1,1,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{1,}"), ctre::repeat<1,0,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{198}"), ctre::repeat<198,198,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{198,}"), ctre::repeat<198,0,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{1,2}"), ctre::repeat<1,2,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{1,1234}"), ctre::repeat<1,1234,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{567,1234}"), ctre::repeat<567,1234,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("[x]{567,1234}"), ctre::repeat<567,1234,ctre::set<ctre::character<'x'>>>()));
-static_assert(same_f(CTRE_GEN("[^x]{567,1234}"), ctre::repeat<567,1234,ctre::negative_set<ctre::character<'x'>>>()));
-static_assert(same_f(CTRE_GEN("(?:abc){3,42}"), ctre::repeat<3,42,ctre::string<'a','b','c'>>()));
+static_assert(same_f(NOTRE_GEN("x+"), notre::plus<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?:abc)+"), notre::plus<notre::string<'a','b','c'>>()));
+static_assert(same_f(NOTRE_GEN("x*"), notre::star<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?:abc)*"), notre::star<notre::string<'a','b','c'>>()));
+static_assert(same_f(NOTRE_GEN("x{1}"), notre::repeat<1,1,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{1,}"), notre::repeat<1,0,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{198}"), notre::repeat<198,198,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{198,}"), notre::repeat<198,0,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{1,2}"), notre::repeat<1,2,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{1,1234}"), notre::repeat<1,1234,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{567,1234}"), notre::repeat<567,1234,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("[x]{567,1234}"), notre::repeat<567,1234,notre::set<notre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("[^x]{567,1234}"), notre::repeat<567,1234,notre::negative_set<notre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("(?:abc){3,42}"), notre::repeat<3,42,notre::string<'a','b','c'>>()));
 
 // combine repeat
-static_assert(same_f(CTRE_GEN("x*x*"), ctre::star<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x+x+"), ctre::repeat<2,0,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x+x*"), ctre::plus<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x*x+"), ctre::plus<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{1,3}x{2,4}"), ctre::repeat<3,7,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("a?a?a?"), ctre::repeat<0,3,ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a?a?b"), ctre::sequence<ctre::repeat<0,2,ctre::character<'a'>>, ctre::character<'b'>>()));
-static_assert(same(CTRE_GEN("a?a?b"), CTRE_GEN("(?:a?a?)b")));
+static_assert(same_f(NOTRE_GEN("x*x*"), notre::star<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x+x+"), notre::repeat<2,0,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x+x*"), notre::plus<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x*x+"), notre::plus<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{1,3}x{2,4}"), notre::repeat<3,7,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("a?a?a?"), notre::repeat<0,3,notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a?a?b"), notre::sequence<notre::repeat<0,2,notre::character<'a'>>, notre::character<'b'>>()));
+static_assert(same(NOTRE_GEN("a?a?b"), NOTRE_GEN("(?:a?a?)b")));
 
 // combine lazy repeat
-static_assert(same_f(CTRE_GEN("x*?x*?"), ctre::lazy_star<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x+?x+?"), ctre::lazy_repeat<2,0,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x+?x*?"), ctre::lazy_plus<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x*?x+?"), ctre::lazy_plus<ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("x{1,3}?x{2,4}?"), ctre::lazy_repeat<3,7,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("a??a??a??"), ctre::lazy_repeat<0,3,ctre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("x*?x*?"), notre::lazy_star<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x+?x+?"), notre::lazy_repeat<2,0,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x+?x*?"), notre::lazy_plus<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x*?x+?"), notre::lazy_plus<notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("x{1,3}?x{2,4}?"), notre::lazy_repeat<3,7,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("a??a??a??"), notre::lazy_repeat<0,3,notre::character<'a'>>()));
 
 // combine possessive
-static_assert(same_f(CTRE_GEN("a{0,0}+a{0,0}+"), ctre::possessive_repeat<0,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,0}+a{0,0}+"), ctre::possessive_repeat<1,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{0,0}+a{1,0}+"), ctre::sequence<ctre::reject, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,0}+a{1,0}+"), ctre::sequence<ctre::reject, ctre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,0}+a{0,0}+"), notre::possessive_repeat<0,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,0}+a{0,0}+"), notre::possessive_repeat<1,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,0}+a{1,0}+"), notre::sequence<notre::reject, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,0}+a{1,0}+"), notre::sequence<notre::reject, notre::character<'a'>>()));
 
-static_assert(same_f(CTRE_GEN("a{0,1}+a{0,0}+"), ctre::possessive_repeat<0,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,1}+a{0,0}+"), ctre::possessive_repeat<1,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{0,1}+a{1,0}+"), ctre::possessive_repeat<2,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,1}+a{1,0}+"), ctre::possessive_repeat<2,0, ctre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,1}+a{0,0}+"), notre::possessive_repeat<0,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,1}+a{0,0}+"), notre::possessive_repeat<1,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,1}+a{1,0}+"), notre::possessive_repeat<2,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,1}+a{1,0}+"), notre::possessive_repeat<2,0, notre::character<'a'>>()));
 
-static_assert(same_f(CTRE_GEN("a{0,0}+a{0,1}+"), ctre::possessive_repeat<0,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,0}+a{0,1}+"), ctre::possessive_repeat<1,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{0,0}+a{1,1}+"), ctre::sequence<ctre::reject, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,0}+a{1,1}+"), ctre::sequence<ctre::reject, ctre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,0}+a{0,1}+"), notre::possessive_repeat<0,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,0}+a{0,1}+"), notre::possessive_repeat<1,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,0}+a{1,1}+"), notre::sequence<notre::reject, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,0}+a{1,1}+"), notre::sequence<notre::reject, notre::character<'a'>>()));
 
-static_assert(same_f(CTRE_GEN("a{0,1}+a{0,1}+"), ctre::possessive_repeat<0,2, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,1}+a{0,1}+"), ctre::possessive_repeat<1,2, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{0,1}+a{1,1}+"), ctre::possessive_repeat<2,2, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,1}+a{1,1}+"), ctre::possessive_repeat<2,2, ctre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,1}+a{0,1}+"), notre::possessive_repeat<0,2, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,1}+a{0,1}+"), notre::possessive_repeat<1,2, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{0,1}+a{1,1}+"), notre::possessive_repeat<2,2, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,1}+a{1,1}+"), notre::possessive_repeat<2,2, notre::character<'a'>>()));
 
-static_assert(same_f(CTRE_GEN("a{1,2}+a{2,0}+"), ctre::possessive_repeat<4,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,2}+a{1,2}+"), ctre::possessive_repeat<3,4, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,1}+a{2,0}+"), ctre::possessive_repeat<3,0, ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("a{1,1}+a{1,2}+"), ctre::possessive_repeat<2,3, ctre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,2}+a{2,0}+"), notre::possessive_repeat<4,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,2}+a{1,2}+"), notre::possessive_repeat<3,4, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,1}+a{2,0}+"), notre::possessive_repeat<3,0, notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("a{1,1}+a{1,2}+"), notre::possessive_repeat<2,3, notre::character<'a'>>()));
 
 
 // don't combine different types of repeats
-static_assert(same_f(CTRE_GEN("x+?x+"), ctre::sequence<ctre::lazy_plus<ctre::character<'x'>>, ctre::plus<ctre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("x+?x+"), notre::sequence<notre::lazy_plus<notre::character<'x'>>, notre::plus<notre::character<'x'>>>()));
 
 
 // possessive/lazy
-static_assert(same_f(CTRE_GEN("c++"), ctre::possessive_plus<ctre::character<'c'>>()));
-static_assert(same_f(CTRE_GEN("c+?"), ctre::lazy_plus<ctre::character<'c'>>()));
-static_assert(same_f(CTRE_GEN("g*+"), ctre::possessive_star<ctre::character<'g'>>()));
-static_assert(same_f(CTRE_GEN("g*?"), ctre::lazy_star<ctre::character<'g'>>()));
-static_assert(same_f(CTRE_GEN("i??"), ctre::lazy_optional<ctre::character<'i'>>()));
-static_assert(same_f(CTRE_GEN("l{1,2}+"), ctre::possessive_repeat<1,2,ctre::character<'l'>>()));
-static_assert(same_f(CTRE_GEN("l{1,2}?"), ctre::lazy_repeat<1,2,ctre::character<'l'>>()));
-static_assert(same_f(CTRE_GEN("q{4,4}+"), ctre::possessive_repeat<4,4,ctre::character<'q'>>()));
-static_assert(same_f(CTRE_GEN("q{4,4}?"), ctre::lazy_repeat<4,4,ctre::character<'q'>>()));
+static_assert(same_f(NOTRE_GEN("c++"), notre::possessive_plus<notre::character<'c'>>()));
+static_assert(same_f(NOTRE_GEN("c+?"), notre::lazy_plus<notre::character<'c'>>()));
+static_assert(same_f(NOTRE_GEN("g*+"), notre::possessive_star<notre::character<'g'>>()));
+static_assert(same_f(NOTRE_GEN("g*?"), notre::lazy_star<notre::character<'g'>>()));
+static_assert(same_f(NOTRE_GEN("i??"), notre::lazy_optional<notre::character<'i'>>()));
+static_assert(same_f(NOTRE_GEN("l{1,2}+"), notre::possessive_repeat<1,2,notre::character<'l'>>()));
+static_assert(same_f(NOTRE_GEN("l{1,2}?"), notre::lazy_repeat<1,2,notre::character<'l'>>()));
+static_assert(same_f(NOTRE_GEN("q{4,4}+"), notre::possessive_repeat<4,4,notre::character<'q'>>()));
+static_assert(same_f(NOTRE_GEN("q{4,4}?"), notre::lazy_repeat<4,4,notre::character<'q'>>()));
 // note: there is no possessive/lazy evaluationg for fixed number of repeats
 
 // captures
-static_assert(same_f(CTRE_GEN("(a)"), ctre::capture<1,ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("(x[cd])"), ctre::capture<1,ctre::character<'x'>, ctre::set<ctre::character<'c'>, ctre::character<'d'>>>())); 
-static_assert(same_f(CTRE_GEN("(x[cd])(ab)"), ctre::sequence<ctre::capture<1,ctre::character<'x'>, ctre::set<ctre::character<'c'>, ctre::character<'d'>>>,ctre::capture<2,ctre::string<'a','b'>>>())); 
-static_assert(same_f(CTRE_GEN("(x[cd])(ab)+"), ctre::sequence<ctre::capture<1,ctre::character<'x'>, ctre::set<ctre::character<'c'>, ctre::character<'d'>>>,ctre::plus<ctre::capture<2,ctre::string<'a','b'>>>>())); 
-static_assert(same_f(CTRE_GEN("(?<n>x)"), ctre::capture_with_name<1,ctre::id<'n'>,ctre::character<'x'>>())); 
-static_assert(same_f(CTRE_GEN("(?<name>x)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::character<'x'>>())); 
-static_assert(same_f(CTRE_GEN("(?<name>xy)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::string<'x','y'>>())); 
-static_assert(same_f(CTRE_GEN("(?<name>x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>())); 
-static_assert(same_f(CTRE_GEN("(?<xy>[x]y)"), ctre::capture_with_name<1,ctre::id<'x','y'>,ctre::set<ctre::character<'x'>>,ctre::character<'y'>>())); 
-static_assert(same_f(CTRE_GEN("(?<xy>[x]y)(a)"), ctre::sequence<ctre::capture_with_name<1,ctre::id<'x','y'>,ctre::set<ctre::character<'x'>>,ctre::character<'y'>>, ctre::capture<2,ctre::character<'a'>>>()));
+static_assert(same_f(NOTRE_GEN("(a)"), notre::capture<1,notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("(x[cd])"), notre::capture<1,notre::character<'x'>, notre::set<notre::character<'c'>, notre::character<'d'>>>())); 
+static_assert(same_f(NOTRE_GEN("(x[cd])(ab)"), notre::sequence<notre::capture<1,notre::character<'x'>, notre::set<notre::character<'c'>, notre::character<'d'>>>,notre::capture<2,notre::string<'a','b'>>>())); 
+static_assert(same_f(NOTRE_GEN("(x[cd])(ab)+"), notre::sequence<notre::capture<1,notre::character<'x'>, notre::set<notre::character<'c'>, notre::character<'d'>>>,notre::plus<notre::capture<2,notre::string<'a','b'>>>>())); 
+static_assert(same_f(NOTRE_GEN("(?<n>x)"), notre::capture_with_name<1,notre::id<'n'>,notre::character<'x'>>())); 
+static_assert(same_f(NOTRE_GEN("(?<name>x)"), notre::capture_with_name<1,notre::id<'n','a','m','e'>,notre::character<'x'>>())); 
+static_assert(same_f(NOTRE_GEN("(?<name>xy)"), notre::capture_with_name<1,notre::id<'n','a','m','e'>,notre::string<'x','y'>>())); 
+static_assert(same_f(NOTRE_GEN("(?<name>x|y)"), notre::capture_with_name<1,notre::id<'n','a','m','e'>,notre::select<notre::character<'x'>,notre::character<'y'>>>())); 
+static_assert(same_f(NOTRE_GEN("(?<xy>[x]y)"), notre::capture_with_name<1,notre::id<'x','y'>,notre::set<notre::character<'x'>>,notre::character<'y'>>())); 
+static_assert(same_f(NOTRE_GEN("(?<xy>[x]y)(a)"), notre::sequence<notre::capture_with_name<1,notre::id<'x','y'>,notre::set<notre::character<'x'>>,notre::character<'y'>>, notre::capture<2,notre::character<'a'>>>()));
 
 // (?P<name>...) and (?'name'...) build the same AST as (?<name>...)
-static_assert(same_f(CTRE_GEN("(?P<name>x)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("(?'name'x)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::character<'x'>>()));
-static_assert(same_f(CTRE_GEN("(?P<name>x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>()));
-static_assert(same_f(CTRE_GEN("(?'name'x|y)"), ctre::capture_with_name<1,ctre::id<'n','a','m','e'>,ctre::select<ctre::character<'x'>,ctre::character<'y'>>>()));
+static_assert(same_f(NOTRE_GEN("(?P<name>x)"), notre::capture_with_name<1,notre::id<'n','a','m','e'>,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?'name'x)"), notre::capture_with_name<1,notre::id<'n','a','m','e'>,notre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?P<name>x|y)"), notre::capture_with_name<1,notre::id<'n','a','m','e'>,notre::select<notre::character<'x'>,notre::character<'y'>>>()));
+static_assert(same_f(NOTRE_GEN("(?'name'x|y)"), notre::capture_with_name<1,notre::id<'n','a','m','e'>,notre::select<notre::character<'x'>,notre::character<'y'>>>()));
 
 // subroutine calls parse into placeholders (inlined later by resolve_subroutines)
-static_assert(same_f(CTRE_GEN("(x)(?1)"), ctre::sequence<ctre::capture<1,ctre::character<'x'>>,ctre::subroutine_call<1>>()));
-static_assert(same_f(CTRE_GEN("(x)(y)(?-2)"), ctre::sequence<ctre::capture<1,ctre::character<'x'>>,ctre::capture<2,ctre::character<'y'>>,ctre::subroutine_call<1>>()));
-static_assert(same_f(CTRE_GEN("(?+1)(x)"), ctre::sequence<ctre::subroutine_call<1>,ctre::capture<1,ctre::character<'x'>>>()));
-static_assert(same_f(CTRE_GEN("(?&name)"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
-static_assert(same_f(CTRE_GEN("(?P>name)"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
-static_assert(same_f(CTRE_GEN("\\g<name>"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
-static_assert(same_f(CTRE_GEN("\\g'name'"), ctre::subroutine_call_with_name<ctre::id<'n','a','m','e'>>()));
-static_assert(same_f(CTRE_GEN("\\g<1>"), ctre::subroutine_call<1>()));
-static_assert(same_f(CTRE_GEN("\\g'2'"), ctre::subroutine_call<2>()));
+static_assert(same_f(NOTRE_GEN("(x)(?1)"), notre::sequence<notre::capture<1,notre::character<'x'>>,notre::subroutine_call<1>>()));
+static_assert(same_f(NOTRE_GEN("(x)(y)(?-2)"), notre::sequence<notre::capture<1,notre::character<'x'>>,notre::capture<2,notre::character<'y'>>,notre::subroutine_call<1>>()));
+static_assert(same_f(NOTRE_GEN("(?+1)(x)"), notre::sequence<notre::subroutine_call<1>,notre::capture<1,notre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("(?&name)"), notre::subroutine_call_with_name<notre::id<'n','a','m','e'>>()));
+static_assert(same_f(NOTRE_GEN("(?P>name)"), notre::subroutine_call_with_name<notre::id<'n','a','m','e'>>()));
+static_assert(same_f(NOTRE_GEN("\\g<name>"), notre::subroutine_call_with_name<notre::id<'n','a','m','e'>>()));
+static_assert(same_f(NOTRE_GEN("\\g'name'"), notre::subroutine_call_with_name<notre::id<'n','a','m','e'>>()));
+static_assert(same_f(NOTRE_GEN("\\g<1>"), notre::subroutine_call<1>()));
+static_assert(same_f(NOTRE_GEN("\\g'2'"), notre::subroutine_call<2>()));
 
 // match point reset \K is an ordinary zero-width atom in the AST
-static_assert(same_f(CTRE_GEN("a\\Kb"), ctre::sequence<ctre::character<'a'>,ctre::match_point_reset,ctre::character<'b'>>()));
+static_assert(same_f(NOTRE_GEN("a\\Kb"), notre::sequence<notre::character<'a'>,notre::match_point_reset,notre::character<'b'>>()));
 
 // conditional patterns
-static_assert(same_f(CTRE_GEN("(a)(?(1)b|c)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::condition_capture<1,ctre::character<'b'>,ctre::character<'c'>>>()));
-static_assert(same_f(CTRE_GEN("(a)(?(1)b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::condition_capture<1,ctre::character<'b'>,ctre::empty>>()));
-static_assert(same_f(CTRE_GEN("(?<w>a)(?(w)b|c)"), ctre::sequence<ctre::capture_with_name<1,ctre::id<'w'>,ctre::character<'a'>>,ctre::condition_capture_with_name<ctre::id<'w'>,ctre::character<'b'>,ctre::character<'c'>>>()));
+static_assert(same_f(NOTRE_GEN("(a)(?(1)b|c)"), notre::sequence<notre::capture<1,notre::character<'a'>>,notre::condition_capture<1,notre::character<'b'>,notre::character<'c'>>>()));
+static_assert(same_f(NOTRE_GEN("(a)(?(1)b)"), notre::sequence<notre::capture<1,notre::character<'a'>>,notre::condition_capture<1,notre::character<'b'>,notre::empty>>()));
+static_assert(same_f(NOTRE_GEN("(?<w>a)(?(w)b|c)"), notre::sequence<notre::capture_with_name<1,notre::id<'w'>,notre::character<'a'>>,notre::condition_capture_with_name<notre::id<'w'>,notre::character<'b'>,notre::character<'c'>>>()));
 // an assertion condition is rewritten into a guarded alternation
-static_assert(same_f(CTRE_GEN("(?(?=x)a|b)"), ctre::select<ctre::sequence<ctre::lookahead_positive<ctre::character<'x'>>,ctre::character<'a'>>,ctre::sequence<ctre::lookahead_negative<ctre::character<'x'>>,ctre::character<'b'>>>()));
+static_assert(same_f(NOTRE_GEN("(?(?=x)a|b)"), notre::select<notre::sequence<notre::lookahead_positive<notre::character<'x'>>,notre::character<'a'>>,notre::sequence<notre::lookahead_negative<notre::character<'x'>>,notre::character<'b'>>>()));
 // DEFINE keeps its body only for subroutine lookups
-static_assert(same_f(CTRE_GEN("(?(DEFINE)(?<d>x))"), ctre::define_group<ctre::capture_with_name<1,ctre::id<'d'>,ctre::character<'x'>>>()));
+static_assert(same_f(NOTRE_GEN("(?(DEFINE)(?<d>x))"), notre::define_group<notre::capture_with_name<1,notre::id<'d'>,notre::character<'x'>>>()));
 
 // callouts parse into unbound zero-width markers
-static_assert(same_f(CTRE_GEN("(?C)"), ctre::callout_numbered<0>()));
-static_assert(same_f(CTRE_GEN("(?C42)"), ctre::callout_numbered<42>()));
-static_assert(same_f(CTRE_GEN("(?C'ab')"), ctre::callout_named<ctre::id<'a','b'>>()));
-static_assert(same_f(CTRE_GEN("(?C\"ab\")"), ctre::callout_named<ctre::id<'a','b'>>()));
-static_assert(same_f(CTRE_GEN("x(?C1)y"), ctre::sequence<ctre::character<'x'>,ctre::callout_numbered<1>,ctre::character<'y'>>()));
+static_assert(same_f(NOTRE_GEN("(?C)"), notre::callout_numbered<0>()));
+static_assert(same_f(NOTRE_GEN("(?C42)"), notre::callout_numbered<42>()));
+static_assert(same_f(NOTRE_GEN("(?C'ab')"), notre::callout_named<notre::id<'a','b'>>()));
+static_assert(same_f(NOTRE_GEN("(?C\"ab\")"), notre::callout_named<notre::id<'a','b'>>()));
+static_assert(same_f(NOTRE_GEN("x(?C1)y"), notre::sequence<notre::character<'x'>,notre::callout_numbered<1>,notre::character<'y'>>()));
 
 // octal and control character escapes produce plain characters
-static_assert(same_f(CTRE_GEN("\\o{101}"), ctre::character<'A'>()));
-static_assert(same_f(CTRE_GEN("\\077"), ctre::character<'?'>()));
-static_assert(same_f(CTRE_GEN("\\0"), ctre::character<'\0'>()));
-static_assert(same_f(CTRE_GEN("\\cA"), ctre::character<'\x01'>()));
-static_assert(same_f(CTRE_GEN("\\cj"), ctre::character<'\x0A'>()));
-static_assert(same_f(CTRE_GEN("\\c?"), ctre::character<'\x7F'>()));
+static_assert(same_f(NOTRE_GEN("\\o{101}"), notre::character<'A'>()));
+static_assert(same_f(NOTRE_GEN("\\077"), notre::character<'?'>()));
+static_assert(same_f(NOTRE_GEN("\\0"), notre::character<'\0'>()));
+static_assert(same_f(NOTRE_GEN("\\cA"), notre::character<'\x01'>()));
+static_assert(same_f(NOTRE_GEN("\\cj"), notre::character<'\x0A'>()));
+static_assert(same_f(NOTRE_GEN("\\c?"), notre::character<'\x7F'>()));
 
-static_assert(same_f(CTRE_GEN("()"), ctre::capture<1,ctre::empty>()));
-static_assert(same_f(CTRE_GEN("(a)(b)"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>,ctre::capture<2,ctre::character<'b'>>>()));
-static_assert(same_f(CTRE_GEN("((a)(b))"), ctre::capture<1,ctre::capture<2,ctre::character<'a'>>,ctre::capture<3,ctre::character<'b'>>>()));
-static_assert(same_f(CTRE_GEN("(((a)(b)))"),ctre::capture<1, ctre::capture<2,ctre::capture<3,ctre::character<'a'>>,ctre::capture<4,ctre::character<'b'>>>>()));
+static_assert(same_f(NOTRE_GEN("()"), notre::capture<1,notre::empty>()));
+static_assert(same_f(NOTRE_GEN("(a)(b)"), notre::sequence<notre::capture<1,notre::character<'a'>>,notre::capture<2,notre::character<'b'>>>()));
+static_assert(same_f(NOTRE_GEN("((a)(b))"), notre::capture<1,notre::capture<2,notre::character<'a'>>,notre::capture<3,notre::character<'b'>>>()));
+static_assert(same_f(NOTRE_GEN("(((a)(b)))"),notre::capture<1, notre::capture<2,notre::capture<3,notre::character<'a'>>,notre::capture<4,notre::character<'b'>>>>()));
 
-static_assert(same_f(CTRE_GEN("((?:a)(b))"), ctre::capture<1,ctre::character<'a'>,ctre::capture<2,ctre::character<'b'>>>()));
+static_assert(same_f(NOTRE_GEN("((?:a)(b))"), notre::capture<1,notre::character<'a'>,notre::capture<2,notre::character<'b'>>>()));
 
 
 // backreference
-static_assert(same_f(CTRE_GEN("(a)\\g{1}"), ctre::sequence<ctre::capture<1,ctre::character<'a'>>, ctre::back_reference<1>>()));
-static_assert(same_f(CTRE_GEN("(?<ab>a)\\g{ab}"), ctre::sequence<ctre::capture_with_name<1,ctre::id<'a','b'>,ctre::character<'a'>>, ctre::back_reference_with_name<ctre::id<'a','b'>>>()));
-static_assert(same_f(CTRE_GEN("((a)\\g{2})"), ctre::capture<1, ctre::capture<2,ctre::character<'a'>>, ctre::back_reference<2>>()));
+static_assert(same_f(NOTRE_GEN("(a)\\g{1}"), notre::sequence<notre::capture<1,notre::character<'a'>>, notre::back_reference<1>>()));
+static_assert(same_f(NOTRE_GEN("(?<ab>a)\\g{ab}"), notre::sequence<notre::capture_with_name<1,notre::id<'a','b'>,notre::character<'a'>>, notre::back_reference_with_name<notre::id<'a','b'>>>()));
+static_assert(same_f(NOTRE_GEN("((a)\\g{2})"), notre::capture<1, notre::capture<2,notre::character<'a'>>, notre::back_reference<2>>()));
 
 // asserts
-static_assert(same_f(CTRE_GEN("^"), ctre::assert_line_begin()));
-static_assert(same_f(CTRE_GEN("$"), ctre::assert_line_end()));
-static_assert(same_f(CTRE_GEN("^$"), ctre::sequence<ctre::assert_line_begin, ctre::assert_line_end>()));
-static_assert(same_f(CTRE_GEN("\\A"), ctre::assert_subject_begin()));
-static_assert(same_f(CTRE_GEN("\\Z"), ctre::assert_subject_end_line()));
-static_assert(same_f(CTRE_GEN("\\z"), ctre::assert_subject_end()));
+static_assert(same_f(NOTRE_GEN("^"), notre::assert_line_begin()));
+static_assert(same_f(NOTRE_GEN("$"), notre::assert_line_end()));
+static_assert(same_f(NOTRE_GEN("^$"), notre::sequence<notre::assert_line_begin, notre::assert_line_end>()));
+static_assert(same_f(NOTRE_GEN("\\A"), notre::assert_subject_begin()));
+static_assert(same_f(NOTRE_GEN("\\Z"), notre::assert_subject_end_line()));
+static_assert(same_f(NOTRE_GEN("\\z"), notre::assert_subject_end()));
 
-static_assert(same_f(CTRE_GEN("^abc$"), ctre::sequence<ctre::assert_line_begin, ctre::string<'a','b','c'>, ctre::assert_line_end>()));
-static_assert(same_f(CTRE_GEN("abc?"), ctre::sequence<ctre::string<'a','b'>, ctre::optional<ctre::character<'c'>>>()));
-static_assert(same_f(CTRE_GEN("abc."), ctre::sequence<ctre::string<'a','b','c'>, ctre::any>()));
-static_assert(same_f(CTRE_GEN("abc.?"), ctre::sequence<ctre::string<'a','b','c'>, ctre::optional<ctre::any>>()));
-static_assert(same_f(CTRE_GEN("abc.def"), ctre::sequence<ctre::string<'a','b','c'>, ctre::any, ctre::string<'d','e','f'>>()));
+static_assert(same_f(NOTRE_GEN("^abc$"), notre::sequence<notre::assert_line_begin, notre::string<'a','b','c'>, notre::assert_line_end>()));
+static_assert(same_f(NOTRE_GEN("abc?"), notre::sequence<notre::string<'a','b'>, notre::optional<notre::character<'c'>>>()));
+static_assert(same_f(NOTRE_GEN("abc."), notre::sequence<notre::string<'a','b','c'>, notre::any>()));
+static_assert(same_f(NOTRE_GEN("abc.?"), notre::sequence<notre::string<'a','b','c'>, notre::optional<notre::any>>()));
+static_assert(same_f(NOTRE_GEN("abc.def"), notre::sequence<notre::string<'a','b','c'>, notre::any, notre::string<'d','e','f'>>()));
 
-static_assert(same_f(CTRE_GEN("^a|b$"), ctre::select<ctre::sequence<ctre::assert_line_begin, ctre::character<'a'>>, ctre::sequence<ctre::character<'b'>, ctre::assert_line_end>>()));
+static_assert(same_f(NOTRE_GEN("^a|b$"), notre::select<notre::sequence<notre::assert_line_begin, notre::character<'a'>>, notre::sequence<notre::character<'b'>, notre::assert_line_end>>()));
 
 // atomic group
-static_assert(same_f(CTRE_GEN("(?>a)"), ctre::atomic_group<ctre::character<'a'>>())); 
-static_assert(same_f(CTRE_GEN("(?>ab)"), ctre::atomic_group<ctre::string<'a','b'>>())); 
-static_assert(same_f(CTRE_GEN("(?>a+b)"), ctre::atomic_group<ctre::plus<ctre::character<'a'>>,ctre::character<'b'>>())); 
+static_assert(same_f(NOTRE_GEN("(?>a)"), notre::atomic_group<notre::character<'a'>>())); 
+static_assert(same_f(NOTRE_GEN("(?>ab)"), notre::atomic_group<notre::string<'a','b'>>())); 
+static_assert(same_f(NOTRE_GEN("(?>a+b)"), notre::atomic_group<notre::plus<notre::character<'a'>>,notre::character<'b'>>())); 
 
 // lookahead positive/negative
-static_assert(same_f(CTRE_GEN("(?=a)"), ctre::lookahead_positive<ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("(?=ax)"), ctre::lookahead_positive<ctre::string<'a','x'>>()));
-static_assert(same_f(CTRE_GEN("(?=[a]x)"), ctre::lookahead_positive<ctre::set<ctre::character<'a'>>,ctre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?=a)"), notre::lookahead_positive<notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("(?=ax)"), notre::lookahead_positive<notre::string<'a','x'>>()));
+static_assert(same_f(NOTRE_GEN("(?=[a]x)"), notre::lookahead_positive<notre::set<notre::character<'a'>>,notre::character<'x'>>()));
 
-static_assert(same_f(CTRE_GEN("(?!a)"), ctre::lookahead_negative<ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("(?!ax)"), ctre::lookahead_negative<ctre::string<'a','x'>>()));
-static_assert(same_f(CTRE_GEN("(?![a]x)"), ctre::lookahead_negative<ctre::set<ctre::character<'a'>>,ctre::character<'x'>>()));
+static_assert(same_f(NOTRE_GEN("(?!a)"), notre::lookahead_negative<notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("(?!ax)"), notre::lookahead_negative<notre::string<'a','x'>>()));
+static_assert(same_f(NOTRE_GEN("(?![a]x)"), notre::lookahead_negative<notre::set<notre::character<'a'>>,notre::character<'x'>>()));
 
-static_assert(same_f(CTRE_GEN("^(?=(a))$"), ctre::sequence<ctre::assert_line_begin, ctre::lookahead_positive<ctre::capture<1,ctre::character<'a'>>>, ctre::assert_line_end>()));
+static_assert(same_f(NOTRE_GEN("^(?=(a))$"), notre::sequence<notre::assert_line_begin, notre::lookahead_positive<notre::capture<1,notre::character<'a'>>>, notre::assert_line_end>()));
 
-static_assert(same_f(CTRE_GEN("^(?=.*(a))$"), ctre::sequence<ctre::assert_line_begin, ctre::lookahead_positive<ctre::star<ctre::any>,ctre::capture<1,ctre::character<'a'>>>, ctre::assert_line_end>()));
+static_assert(same_f(NOTRE_GEN("^(?=.*(a))$"), notre::sequence<notre::assert_line_begin, notre::lookahead_positive<notre::star<notre::any>,notre::capture<1,notre::character<'a'>>>, notre::assert_line_end>()));
 
-static_assert(same_f(CTRE_GEN("^(?=.*(a).*)$"), ctre::sequence<ctre::assert_line_begin, ctre::lookahead_positive<ctre::star<ctre::any>,ctre::capture<1,ctre::character<'a'>>, ctre::star<ctre::any>>, ctre::assert_line_end>()));
+static_assert(same_f(NOTRE_GEN("^(?=.*(a).*)$"), notre::sequence<notre::assert_line_begin, notre::lookahead_positive<notre::star<notre::any>,notre::capture<1,notre::character<'a'>>, notre::star<notre::any>>, notre::assert_line_end>()));
 
-static_assert(same_f(CTRE_GEN("^(?=.*(a)\\g{1}.*)$"), ctre::sequence<ctre::assert_line_begin, ctre::lookahead_positive<ctre::star<ctre::any>,ctre::capture<1,ctre::character<'a'>>, ctre::back_reference<1>, ctre::star<ctre::any>>, ctre::assert_line_end>()));
+static_assert(same_f(NOTRE_GEN("^(?=.*(a)\\g{1}.*)$"), notre::sequence<notre::assert_line_begin, notre::lookahead_positive<notre::star<notre::any>,notre::capture<1,notre::character<'a'>>, notre::back_reference<1>, notre::star<notre::any>>, notre::assert_line_end>()));
 
-static_assert(same_f(CTRE_GEN("^(?=.*(a)\\g{1}.*)[a-z]$"), ctre::sequence<ctre::assert_line_begin, ctre::lookahead_positive<ctre::star<ctre::any>,ctre::capture<1,ctre::character<'a'>>, ctre::back_reference<1>, ctre::star<ctre::any>>, ctre::set<ctre::char_range<'a','z'>>, ctre::assert_line_end>()));
+static_assert(same_f(NOTRE_GEN("^(?=.*(a)\\g{1}.*)[a-z]$"), notre::sequence<notre::assert_line_begin, notre::lookahead_positive<notre::star<notre::any>,notre::capture<1,notre::character<'a'>>, notre::back_reference<1>, notre::star<notre::any>>, notre::set<notre::char_range<'a','z'>>, notre::assert_line_end>()));
 
 // lookbehind positive/negative
-static_assert(same_f(CTRE_GEN("(?<=a)"), ctre::lookbehind_positive<ctre::character<'a'>>()));
-static_assert(same_f(CTRE_GEN("(?<!a)"), ctre::lookbehind_negative<ctre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("(?<=a)"), notre::lookbehind_positive<notre::character<'a'>>()));
+static_assert(same_f(NOTRE_GEN("(?<!a)"), notre::lookbehind_negative<notre::character<'a'>>()));
 
-static_assert(same_f(CTRE_GEN("(?<=ab)"), ctre::lookbehind_positive<ctre::string<'b','a'>>()));
-static_assert(same_f(CTRE_GEN("(?<!ab)"), ctre::lookbehind_negative<ctre::string<'b','a'>>()));
+static_assert(same_f(NOTRE_GEN("(?<=ab)"), notre::lookbehind_positive<notre::string<'b','a'>>()));
+static_assert(same_f(NOTRE_GEN("(?<!ab)"), notre::lookbehind_negative<notre::string<'b','a'>>()));
 
-static_assert(same_f(CTRE_GEN("(?<=ab|cd)"), ctre::lookbehind_positive<ctre::select<ctre::string<'b','a'>, ctre::string<'d','c'>>>()));
-static_assert(same_f(CTRE_GEN("(?<!ab|cd)"), ctre::lookbehind_negative<ctre::select<ctre::string<'b','a'>, ctre::string<'d','c'>>>()));
+static_assert(same_f(NOTRE_GEN("(?<=ab|cd)"), notre::lookbehind_positive<notre::select<notre::string<'b','a'>, notre::string<'d','c'>>>()));
+static_assert(same_f(NOTRE_GEN("(?<!ab|cd)"), notre::lookbehind_negative<notre::select<notre::string<'b','a'>, notre::string<'d','c'>>>()));
 
-static_assert(same_f(CTRE_GEN("(?<=(ab))"), ctre::lookbehind_positive<ctre::capture<1, ctre::string<'b','a'>>>()));
-static_assert(same_f(CTRE_GEN("(?<!(ab))"), ctre::lookbehind_negative<ctre::capture<1, ctre::string<'b','a'>>>()));
+static_assert(same_f(NOTRE_GEN("(?<=(ab))"), notre::lookbehind_positive<notre::capture<1, notre::string<'b','a'>>>()));
+static_assert(same_f(NOTRE_GEN("(?<!(ab))"), notre::lookbehind_negative<notre::capture<1, notre::string<'b','a'>>>()));

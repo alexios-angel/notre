@@ -2,11 +2,11 @@
 //
 // Each alternative gets its own capture group; whichever group
 // participated in the match tells you the token type. Combined with
-// ctre::tokenize this turns into a whole tokenizer loop.
+// notre::tokenize this turns into a whole tokenizer loop.
 //
 // Build: make lexer
 
-#include <ctre.hpp>
+#include <notre.hpp>
 #include <iostream>
 #include <optional>
 #include <string_view>
@@ -23,7 +23,7 @@ struct lex_item {
 };
 
 constexpr std::optional<lex_item> lexer(std::string_view v) noexcept {
-	if (auto [m, id, num] = ctre::match<"([a-z]+)|([0-9]+)">(v); m) {
+	if (auto [m, id, num] = notre::match<"([a-z]+)|([0-9]+)">(v); m) {
 		if (id) {
 			return lex_item{type::identifier, id};
 		} else if (num) {
